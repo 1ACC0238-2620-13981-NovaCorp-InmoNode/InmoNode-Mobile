@@ -4,13 +4,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
+import com.novacorp.inmonode_app.features.iam.presentation.navigation.AuthNavGraphRoute
+import com.novacorp.inmonode_app.features.iam.presentation.navigation.authNavGraph
 import com.novacorp.inmonode_app.features.main.MainNavGraphRoute
 import com.novacorp.inmonode_app.features.main.mainNavGraph
 
-/**
- * Root navigation. Splash (US-02) and auth (US-01) graphs are added by their feature branches,
- * which also move the start destination to the splash screen.
- */
 @Composable
 fun AppNavHost(
     navController: NavHostController,
@@ -18,9 +16,16 @@ fun AppNavHost(
 ) {
     NavHost(
         navController = navController,
-        startDestination = MainNavGraphRoute,
+        startDestination = AuthNavGraphRoute,
         modifier = modifier
     ) {
+        authNavGraph(
+            onSignedIn = {
+                navController.navigate(MainNavGraphRoute) {
+                    popUpTo(AuthNavGraphRoute) { inclusive = true }
+                }
+            }
+        )
         mainNavGraph()
     }
 }

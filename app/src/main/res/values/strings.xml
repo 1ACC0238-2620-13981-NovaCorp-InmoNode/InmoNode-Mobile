@@ -13,4 +13,26 @@
     <string name="prospects_title">Prospectos</string>
     <string name="sync_queue_title">Cola de sincronización</string>
     <string name="profile_title">Perfil del agente</string>
+
+    <!-- Login (M02, M03) -->
+    <string name="login_title">Bienvenido</string>
+    <string name="login_subtitle">Ingresa con tus credenciales de agente comercial para acceder a tu portafolio de lotes.</string>
+    <string name="login_email_label">Correo electrónico</string>
+    <string name="login_email_placeholder">agente@inmobiliaria.com</string>
+    <string name="login_password_label">Contraseña</string>
+    <string name="login_show_password">Mostrar contraseña</string>
+    <string name="login_hide_password">Ocultar contraseña</string>
+    <string name="login_button">Iniciar sesión</string>
+    <string name="login_button_locked">Iniciar sesión (bloqueado)</string>
+    <string name="login_connecting">Conectando con el servidor. La primera conexión puede tardar hasta un minuto.</string>
+    <string name="login_connection_hint">Se requiere conexión a internet para el primer inicio de sesión del día.</string>
+    <string name="login_footer">v%1$s · NovaCorp</string>
+    <string name="login_error_invalid_credentials">Correo o contraseña incorrectos.</string>
+    <string name="login_error_locked">Acceso bloqueado temporalmente por 5 intentos fallidos. Intenta nuevamente en %1$s min.</string>
+    <string name="login_error_inactive">Tu cuenta aún no está activa. Verifica tu correo antes de iniciar sesión.</string>
+    <string name="login_error_not_field_agent">Esta aplicación es exclusiva para agentes comerciales de campo.</string>
+    <string name="login_error_too_many_requests">Demasiadas solicitudes. Espera un momento e inténtalo de nuevo.</string>
+    <string name="login_error_network">No se pudo conectar con el servidor. Revisa tu conexión e inténtalo de nuevo.</string>
+    <string name="login_error_unknown">Ocurrió un error inesperado. Inténtalo de nuevo.</string>
+    <string name="login_error_unknown_detail">Ocurrió un error inesperado: %1$s</string>
 </resources>
