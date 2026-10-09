@@ -1,6 +1,5 @@
 package com.novacorp.inmonode_app.core.designsystem.theme
 
-import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
@@ -11,33 +10,81 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 
-private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+private val LightColorScheme = lightColorScheme(
+    primary = ForestGreen,
+    onPrimary = White,
+    primaryContainer = ForestGreenContainer,
+    onPrimaryContainer = OnForestGreenContainer,
+    secondary = LightGreen,
+    onSecondary = PureBlack,
+    secondaryContainer = LightGreenContainer,
+    onSecondaryContainer = PureBlack,
+    tertiary = AlertYellow,
+    onTertiary = PureBlack,
+    tertiaryContainer = AlertYellowContainer,
+    onTertiaryContainer = PureBlack,
+    error = TerracottaOrange,
+    onError = White,
+    errorContainer = TerracottaContainer,
+    onErrorContainer = OnTerracottaContainer,
+    background = OffWhite,
+    onBackground = PureBlack,
+    surface = White,
+    onSurface = PureBlack,
+    surfaceVariant = NeutralVariant,
+    onSurfaceVariant = OnNeutralVariant,
+    surfaceTint = ForestGreen,
+    outline = Outline,
+    outlineVariant = OutlineVariant,
+    surfaceBright = White,
+    surfaceDim = SurfaceContainerHighestLight,
+    surfaceContainerLowest = White,
+    surfaceContainerLow = SurfaceContainerLowLight,
+    surfaceContainer = SurfaceContainerLight,
+    surfaceContainerHigh = SurfaceContainerHighLight,
+    surfaceContainerHighest = SurfaceContainerHighestLight
 )
 
-private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
-
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
+private val DarkColorScheme = darkColorScheme(
+    primary = LightGreen,
+    onPrimary = PureBlack,
+    primaryContainer = ForestGreenContainerDark,
+    onPrimaryContainer = ForestGreenContainer,
+    secondary = ForestGreen,
+    onSecondary = White,
+    secondaryContainer = ForestGreenContainerDark,
+    onSecondaryContainer = LightGreenContainer,
+    tertiary = AlertYellow,
+    onTertiary = PureBlack,
+    tertiaryContainer = AlertYellowContainerDark,
+    onTertiaryContainer = AlertYellowContainer,
+    error = TerracottaOrange,
+    onError = White,
+    errorContainer = TerracottaContainerDark,
+    onErrorContainer = TerracottaContainer,
+    background = BackgroundDark,
+    onBackground = OffWhite,
+    surface = SurfaceDark,
+    onSurface = OffWhite,
+    surfaceVariant = OnNeutralVariant,
+    onSurfaceVariant = OutlineVariant,
+    surfaceTint = LightGreen,
+    outline = Outline,
+    outlineVariant = OnNeutralVariant,
+    surfaceBright = SurfaceContainerHighestDark,
+    surfaceDim = BackgroundDark,
+    surfaceContainerLowest = BackgroundDark,
+    surfaceContainerLow = SurfaceContainerLowDark,
+    surfaceContainer = SurfaceContainerDark,
+    surfaceContainerHigh = SurfaceContainerHighDark,
+    surfaceContainerHighest = SurfaceContainerHighestDark
 )
 
 @Composable
 fun InmoNodeAppTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+    // Brand colors are fixed; dynamic color (Android 12+) stays opt-in
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
