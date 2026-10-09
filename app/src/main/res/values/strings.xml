@@ -1,4 +1,16 @@
 <resources>
     <string name="app_name">InmoNode-App</string>
     <string name="coming_soon_message">En construcción. Esta pantalla llega con %1$s.</string>
+
+    <!-- Bottom navigation -->
+    <string name="nav_map">Mapa</string>
+    <string name="nav_prospects">Prospectos</string>
+    <string name="nav_sync">Sincronizar</string>
+    <string name="nav_profile">Perfil</string>
+
+    <!-- Screen titles -->
+    <string name="cadastral_map_title">Mapa Catastral</string>
+    <string name="prospects_title">Prospectos</string>
+    <string name="sync_queue_title">Cola de sincronización</string>
+    <string name="profile_title">Perfil del agente</string>
 </resources>
