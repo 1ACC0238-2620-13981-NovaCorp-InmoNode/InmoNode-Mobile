@@ -1,3 +1,15 @@
 package com.novacorp.inmonode_app.features.iam.domain
 
-// TODO: US-01 - signIn, signOut, refresh and current session contract.
+import kotlinx.coroutines.flow.Flow
+
+interface AuthRepository {
+
+    /** Signed-in user, or null when there is no session. Works offline. */
+    val currentUser: Flow<User?>
+
+    /** Fails with an [AuthError]. */
+    suspend fun signIn(email: String, password: String): Result<User>
+
+    /** Always ends the local session, even without connection. */
+    suspend fun signOut()
+}

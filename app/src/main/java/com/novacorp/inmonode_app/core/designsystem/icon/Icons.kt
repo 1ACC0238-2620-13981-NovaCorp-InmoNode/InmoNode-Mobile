@@ -23,4 +23,12 @@ object InmoIcons {
         @Composable get() = ImageVector.vectorResource(R.drawable.ic_person_filled)
     val Construction: ImageVector
         @Composable get() = ImageVector.vectorResource(R.drawable.ic_construction)
+    val Info: ImageVector
+        @Composable get() = ImageVector.vectorResource(R.drawable.ic_info)
+    val Error: ImageVector
+        @Composable get() = ImageVector.vectorResource(R.drawable.ic_error)
+    val Visibility: ImageVector
+        @Composable get() = ImageVector.vectorResource(R.drawable.ic_visibility)
+    val VisibilityOff: ImageVector
+        @Composable get() = ImageVector.vectorResource(R.drawable.ic_visibility_off)
 }
