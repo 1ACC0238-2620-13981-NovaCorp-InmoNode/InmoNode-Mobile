@@ -2,6 +2,7 @@ package com.novacorp.inmonode_app.core.di
 
 import com.novacorp.inmonode_app.BuildConfig
 import com.novacorp.inmonode_app.core.network.AuthInterceptor
+import com.novacorp.inmonode_app.core.network.TokenAuthenticator
 import com.novacorp.inmonode_app.core.network.isApiRequest
 import dagger.Module
 import dagger.Provides
@@ -21,7 +22,10 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideOkHttpClient(authInterceptor: AuthInterceptor): OkHttpClient {
+    fun provideOkHttpClient(
+        authInterceptor: AuthInterceptor,
+        tokenAuthenticator: TokenAuthenticator
+    ): OkHttpClient {
         // Backend error messages in Spanish (default is English)
         val languageInterceptor = Interceptor { chain ->
             val request = chain.request()
@@ -41,6 +45,7 @@ object NetworkModule {
             .addInterceptor(languageInterceptor)
             .addInterceptor(authInterceptor)
             .addInterceptor(loggingInterceptor)
+            .authenticator(tokenAuthenticator)
             .build()
     }
 
