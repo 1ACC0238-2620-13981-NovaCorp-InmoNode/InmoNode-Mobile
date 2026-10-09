@@ -14,6 +14,10 @@
     <string name="sync_queue_title">Cola de sincronización</string>
     <string name="profile_title">Perfil del agente</string>
 
+    <!-- Splash (M01) -->
+    <string name="splash_tagline">Ventas en campo</string>
+    <string name="splash_loading">Cargando datos locales…</string>
+
     <!-- Login (M02, M03) -->
     <string name="login_title">Bienvenido</string>
     <string name="login_subtitle">Ingresa con tus credenciales de agente comercial para acceder a tu portafolio de lotes.</string>
