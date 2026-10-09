@@ -1,3 +1,9 @@
 package com.novacorp.inmonode_app.features.iam.presentation.profile
 
-// TODO: M28 - Profile UI state.
+import com.novacorp.inmonode_app.features.iam.domain.User
+
+data class ProfileUiState(
+    val user: User? = null,
+    val isSignOutDialogVisible: Boolean = false,
+    val isSigningOut: Boolean = false
+)

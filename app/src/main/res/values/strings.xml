@@ -12,7 +12,17 @@
     <string name="cadastral_map_title">Mapa Catastral</string>
     <string name="prospects_title">Prospectos</string>
     <string name="sync_queue_title">Cola de sincronización</string>
-    <string name="profile_title">Perfil del agente</string>
+
+    <!-- Profile (M28) -->
+    <string name="profile_sign_out">Cerrar sesión</string>
+    <string name="profile_sign_out_dialog_title">¿Cerrar sesión?</string>
+    <string name="profile_sign_out_dialog_message">Necesitarás conexión a internet para volver a iniciar sesión.</string>
+    <string name="profile_sign_out_dialog_cancel">Cancelar</string>
+    <string name="role_field_agent">Agente comercial de campo</string>
+    <string name="role_buyer">Comprador</string>
+    <string name="role_catalog_admin">Administrador de catálogo</string>
+    <string name="role_finance_admin">Administrador financiero</string>
+    <string name="role_unknown">Rol desconocido</string>
 
     <!-- Splash (M01) -->
     <string name="splash_tagline">Ventas en campo</string>
