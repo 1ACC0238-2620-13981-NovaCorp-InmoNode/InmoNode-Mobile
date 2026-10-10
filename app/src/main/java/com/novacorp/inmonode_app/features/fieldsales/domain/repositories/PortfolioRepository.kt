@@ -1,3 +1,9 @@
 package com.novacorp.inmonode_app.features.fieldsales.domain.repositories
 
-// TODO: US-02, US-05 - Download and read the cached portfolio (projects + lots).
+import com.novacorp.inmonode_app.features.fieldsales.domain.model.Portfolio
+import kotlinx.coroutines.flow.Flow
+
+interface PortfolioRepository {
+    fun observePortfolio(): Flow<Portfolio>
+    suspend fun download(): Result<Portfolio>
+}
