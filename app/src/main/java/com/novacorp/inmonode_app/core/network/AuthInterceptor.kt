@@ -9,10 +9,11 @@ import okhttp3.Request
 import okhttp3.Response
 import javax.inject.Inject
 
-private val apiHost = BuildConfig.BASE_URL.toHttpUrl().host
+private val apiOrigin = BuildConfig.BASE_URL.toHttpUrl()
 
 /** True for calls to the InmoNode API (not for presigned storage URLs). */
-internal fun Request.isApiRequest(): Boolean = url.host == apiHost
+internal fun Request.isApiRequest(): Boolean =
+    url.scheme == apiOrigin.scheme && url.host == apiOrigin.host && url.port == apiOrigin.port
 
 /** True for the public auth endpoints (login, refresh, logout, ...), which never carry a token. */
 internal fun Request.isAuthRequest(): Boolean = url.encodedPath.contains("/auth/")
