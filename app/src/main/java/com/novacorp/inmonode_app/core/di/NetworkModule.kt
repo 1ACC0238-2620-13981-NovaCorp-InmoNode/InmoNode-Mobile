@@ -4,6 +4,7 @@ import com.novacorp.inmonode_app.BuildConfig
 import com.novacorp.inmonode_app.core.network.AuthInterceptor
 import com.novacorp.inmonode_app.core.network.TokenAuthenticator
 import com.novacorp.inmonode_app.core.network.isApiRequest
+import com.novacorp.inmonode_app.core.network.isAuthRequest
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -33,7 +34,8 @@ object NetworkModule {
             chain.proceed(request.newBuilder().header("Accept-Language", "es").build())
         }
         val loggingInterceptor = HttpLoggingInterceptor().apply {
-            level = if (BuildConfig.DEBUG) HttpLoggingInterceptor.Level.BODY else HttpLoggingInterceptor.Level.NONE
+            // BASIC retains method/status/timing, never credentials or token bodies/headers.
+            level = if (BuildConfig.DEBUG) HttpLoggingInterceptor.Level.BASIC else HttpLoggingInterceptor.Level.NONE
             redactHeader("Authorization")
         }
 
@@ -45,6 +47,14 @@ object NetworkModule {
             .addInterceptor(languageInterceptor)
             .addInterceptor(authInterceptor)
             .addInterceptor(loggingInterceptor)
+            // Runs on every network exchange, including redirect follow-ups.
+            .addNetworkInterceptor { chain ->
+                val request = chain.request()
+                val safeRequest = if (!request.isApiRequest() || request.isAuthRequest()) {
+                    request.newBuilder().removeHeader("Authorization").build()
+                } else request
+                chain.proceed(safeRequest)
+            }
             .authenticator(tokenAuthenticator)
             .build()
     }

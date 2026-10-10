@@ -15,7 +15,7 @@ sealed class AuthError(message: String? = null) : Exception(message) {
     class NotFieldAgent : AuthError()
 
     /** 429 RATE_LIMIT_EXCEEDED. */
-    class TooManyRequests : AuthError()
+    class TooManyRequests(val retryAfterSeconds: Long? = null) : AuthError()
 
     /** No connection or the server did not answer in time. */
     class Network : AuthError()

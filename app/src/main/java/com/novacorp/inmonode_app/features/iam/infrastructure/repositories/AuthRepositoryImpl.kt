@@ -28,7 +28,7 @@ class AuthRepositoryImpl @Inject constructor(
 ) : AuthRepository {
 
     override val currentUser: Flow<User?> = tokenManager.accessToken
-        .map { token -> token?.let(jwtDecoder::decodeUser) }
+        .map { token -> token?.let(jwtDecoder::decodeUser)?.takeIf { it.isFieldAgent } }
         .distinctUntilChanged()
 
     override suspend fun signIn(email: String, password: String): Result<User> {
@@ -39,8 +39,8 @@ class AuthRepositoryImpl @Inject constructor(
                 return Result.failure(response.toAuthError())
             }
 
-            val user = jwtDecoder.decodeUser(tokens.token)
-                ?: return Result.failure(AuthError.Unknown("Invalid access token"))
+            val user = jwtDecoder.decodeSession(tokens)
+                ?: return Result.failure(AuthError.Unknown(null))
             if (!user.isFieldAgent) {
                 revokeInBackground(tokens.refreshToken)
                 return Result.failure(AuthError.NotFieldAgent())
@@ -53,13 +53,14 @@ class AuthRepositoryImpl @Inject constructor(
         } catch (e: IOException) {
             return Result.failure(AuthError.Network())
         } catch (e: Exception) {
-            return Result.failure(AuthError.Unknown(e.message))
+            return Result.failure(AuthError.Unknown(null))
         }
     }
 
     override suspend fun signOut() {
         val refreshToken = tokenManager.getRefreshToken()
-        tokenManager.clearTokens()
+        // A newer login must not be erased by a logout that captured the old session.
+        refreshToken?.let { tokenManager.clearIfCurrent(it) }
         refreshToken?.let(::revokeInBackground)
     }
 
@@ -68,24 +69,27 @@ class AuthRepositoryImpl @Inject constructor(
         applicationScope.launch {
             try {
                 service.signOut(RefreshTokenRequestDto(refreshToken))
-            } catch (e: IOException) {
-                // Ignored, see above
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                // Best effort; never log auth payloads or exception details.
             }
         }
     }
 
     private fun Response<*>.toAuthError(): AuthError {
         val error = errorResource()
+        val retryAfter = headers()["Retry-After"]?.toLongOrNull()?.takeIf { it > 0 }
         return when (error?.code) {
             "INVALID_CREDENTIALS" -> AuthError.InvalidCredentials()
             "ACCOUNT_LOCKED" -> AuthError.AccountLocked()
             "ACCOUNT_INACTIVE" -> AuthError.AccountInactive()
-            "RATE_LIMIT_EXCEEDED" -> AuthError.TooManyRequests()
+            "RATE_LIMIT_EXCEEDED" -> AuthError.TooManyRequests(retryAfter)
             else -> when (code()) {
                 401 -> AuthError.InvalidCredentials()
                 423 -> AuthError.AccountLocked()
-                429 -> AuthError.TooManyRequests()
-                else -> AuthError.Unknown(error?.message ?: message())
+                429 -> AuthError.TooManyRequests(retryAfter)
+                else -> AuthError.Unknown(null)
             }
         }
     }

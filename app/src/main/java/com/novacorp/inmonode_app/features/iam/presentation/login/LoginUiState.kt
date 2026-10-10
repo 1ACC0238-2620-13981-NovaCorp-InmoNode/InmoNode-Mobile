@@ -1,5 +1,7 @@
 package com.novacorp.inmonode_app.features.iam.presentation.login
 
+import com.novacorp.inmonode_app.features.iam.domain.SignInInput
+
 data class LoginUiState(
     val email: String = "",
     val password: String = "",
@@ -7,16 +9,14 @@ data class LoginUiState(
     val isLoading: Boolean = false,
     val isAuthenticated: Boolean = false,
     val error: LoginError? = null,
-    /** M03: seconds until the account can try again, or null when not locked. */
-    val lockedSecondsRemaining: Long? = null
+    val retryAfterSecondsRemaining: Long = 0
 ) {
-    val isLocked: Boolean get() = lockedSecondsRemaining != null
-
-    val canSubmit: Boolean get() = email.isNotBlank() && password.isNotEmpty() && !isLoading && !isLocked
+    val canSubmit: Boolean get() = SignInInput.isValid(email, password) && !isLoading && !isAuthenticated && retryAfterSecondsRemaining == 0L
 }
 
 sealed interface LoginError {
     data object InvalidCredentials : LoginError
+    data object AccountLocked : LoginError
     data object AccountInactive : LoginError
     data object NotFieldAgent : LoginError
     data object TooManyRequests : LoginError

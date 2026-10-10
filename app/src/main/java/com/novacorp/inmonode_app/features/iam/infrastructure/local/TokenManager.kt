@@ -33,6 +33,12 @@ class TokenManager @Inject constructor(
 
     suspend fun getRefreshToken(): String? = preferences.first()[REFRESH_TOKEN]
 
+    /** Access and refresh must belong to the same atomic DataStore snapshot. */
+    suspend fun getTokenSnapshot(): Pair<String?, String?> {
+        val snapshot = preferences.first()
+        return snapshot[ACCESS_TOKEN] to snapshot[REFRESH_TOKEN]
+    }
+
     suspend fun saveTokens(accessToken: String, refreshToken: String) {
         dataStore.edit { preferences ->
             preferences[ACCESS_TOKEN] = accessToken
@@ -45,5 +51,27 @@ class TokenManager @Inject constructor(
             preferences.remove(ACCESS_TOKEN)
             preferences.remove(REFRESH_TOKEN)
         }
+    }
+
+    /** Atomic rotation: a logout or newer login wins over an in-flight refresh. */
+    suspend fun clearIfCurrent(expectedRefresh: String) {
+        dataStore.edit { preferences ->
+            if (preferences[REFRESH_TOKEN] == expectedRefresh) {
+                preferences.remove(ACCESS_TOKEN)
+                preferences.remove(REFRESH_TOKEN)
+            }
+        }
+    }
+
+    suspend fun rotateIfCurrent(expectedRefresh: String, accessToken: String, refreshToken: String): Boolean {
+        var saved = false
+        dataStore.edit { preferences ->
+            if (preferences[REFRESH_TOKEN] == expectedRefresh) {
+                preferences[ACCESS_TOKEN] = accessToken
+                preferences[REFRESH_TOKEN] = refreshToken
+                saved = true
+            }
+        }
+        return saved
     }
 }
