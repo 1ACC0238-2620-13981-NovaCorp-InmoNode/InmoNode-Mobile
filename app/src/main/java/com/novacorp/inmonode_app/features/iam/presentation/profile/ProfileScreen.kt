@@ -41,13 +41,15 @@ import com.novacorp.inmonode_app.features.iam.domain.UserRole
 @Composable
 fun ProfileScreen(
     modifier: Modifier = Modifier,
-    viewModel: ProfileViewModel = hiltViewModel()
+    viewModel: ProfileViewModel = hiltViewModel(),
+    onPortfolio: () -> Unit = {}
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
     ProfileContent(
         state = state,
         onSignOutClicked = viewModel::onSignOutClicked,
+        onPortfolio = onPortfolio,
         modifier = modifier
     )
 
@@ -74,7 +76,8 @@ fun ProfileScreen(
 fun ProfileContent(
     state: ProfileUiState,
     onSignOutClicked: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onPortfolio: () -> Unit = {}
 ) {
     Column(
         modifier = modifier
@@ -125,8 +128,15 @@ fun ProfileContent(
             }
         }
 
-        // Portfolio and sync details (projects, last sync, pending records, catalog version)
-        // and "Actualizar portafolio" are added with US-02 and US-11.
+        Spacer(Modifier.height(24.dp))
+        com.novacorp.inmonode_app.core.designsystem.components.FieldValue(stringResource(R.string.portfolio_projects),state.projectCount.toString())
+        Spacer(Modifier.height(16.dp))
+        com.novacorp.inmonode_app.core.designsystem.components.FieldValue(stringResource(R.string.profile_pending),state.pendingCount.toString())
+        Spacer(Modifier.height(16.dp))
+        com.novacorp.inmonode_app.core.designsystem.components.FieldValue(stringResource(R.string.profile_catalog_version),com.novacorp.inmonode_app.core.designsystem.components.displayTimestamp(state.catalogVersion))
+        TextButton(onClick = onPortfolio, modifier = Modifier.fillMaxWidth()) {
+            Text(stringResource(R.string.profile_portfolio))
+        }
 
         Spacer(modifier = Modifier.height(32.dp))
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
