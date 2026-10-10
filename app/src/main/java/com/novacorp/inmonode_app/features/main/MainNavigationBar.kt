@@ -1,5 +1,7 @@
 package com.novacorp.inmonode_app.features.main
 
+import androidx.compose.foundation.layout.*
+import androidx.compose.ui.unit.dp
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -24,9 +26,9 @@ fun MainNavigationBar(
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = backStackEntry?.destination
 
-    NavigationBar(modifier = modifier) {
+    NavigationBar(modifier = modifier.navigationBarsPadding().height(64.dp), windowInsets = WindowInsets(0, 0, 0, 0)) {
         NavigationItem.entries.forEach { item ->
-            val selected = currentDestination?.hierarchy?.any { destination ->
+            val selected = (item == NavigationItem.PROSPECTS && currentDestination?.hasRoute<com.novacorp.inmonode_app.features.vouchers.presentation.navigation.SeparationListRoute>() == true) || currentDestination?.hierarchy?.any { destination ->
                 destination.hasRoute(item.route::class)
             } == true
 
