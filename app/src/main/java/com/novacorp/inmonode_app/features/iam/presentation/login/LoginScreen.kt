@@ -32,6 +32,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -81,7 +84,9 @@ fun LoginContent(
     onSignIn: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val isCredentialError = state.error == LoginError.InvalidCredentials || state.isLocked
+    val isCredentialError = state.error == LoginError.InvalidCredentials || state.error == LoginError.AccountLocked
+    val emailLabel = stringResource(R.string.login_email_label)
+    val passwordLabel = stringResource(R.string.login_password_label)
 
     Column(
         modifier = modifier
@@ -107,8 +112,8 @@ fun LoginContent(
         )
 
         val alert = when {
-            state.lockedSecondsRemaining != null ->
-                stringResource(R.string.login_error_locked, formatCountdown(state.lockedSecondsRemaining))
+            state.retryAfterSecondsRemaining > 0 ->
+                stringResource(R.string.login_retry_after, state.retryAfterSecondsRemaining)
             else -> state.error?.takeIf { it != LoginError.InvalidCredentials }?.let { loginErrorMessage(it) }
         }
         if (alert != null) {
@@ -117,11 +122,11 @@ fun LoginContent(
         }
 
         Spacer(modifier = Modifier.height(24.dp))
-        FieldLabel(text = stringResource(R.string.login_email_label))
+        FieldLabel(text = emailLabel)
         OutlinedTextField(
             value = state.email,
             onValueChange = onEmailChanged,
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().semantics { contentDescription = emailLabel },
             placeholder = { Text(stringResource(R.string.login_email_placeholder)) },
             singleLine = true,
             enabled = !state.isLoading,
@@ -131,11 +136,11 @@ fun LoginContent(
         )
 
         Spacer(modifier = Modifier.height(16.dp))
-        FieldLabel(text = stringResource(R.string.login_password_label))
+        FieldLabel(text = passwordLabel)
         OutlinedTextField(
             value = state.password,
             onValueChange = onPasswordChanged,
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().semantics { contentDescription = passwordLabel },
             singleLine = true,
             enabled = !state.isLoading,
             isError = isCredentialError,
@@ -145,7 +150,7 @@ fun LoginContent(
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = { onSignIn() }),
             trailingIcon = {
-                IconButton(onClick = onTogglePasswordVisibility) {
+                IconButton(onClick = onTogglePasswordVisibility, enabled = !state.isLoading) {
                     Icon(
                         imageVector = if (state.isPasswordHidden) InmoIcons.Visibility else InmoIcons.VisibilityOff,
                         contentDescription = stringResource(
@@ -178,9 +183,7 @@ fun LoginContent(
                 )
             } else {
                 Text(
-                    text = stringResource(
-                        if (state.isLocked) R.string.login_button_locked else R.string.login_button
-                    ),
+                    text = stringResource(R.string.login_button),
                     style = MaterialTheme.typography.labelLarge
                 )
             }
@@ -224,7 +227,8 @@ private fun fieldColors() = OutlinedTextFieldDefaults.colors(
 private fun FieldLabel(text: String) {
     Text(
         text = text,
-        modifier = Modifier.padding(bottom = 8.dp),
+        // The associated input owns the accessible name; avoid a duplicate label stop.
+        modifier = Modifier.padding(bottom = 8.dp).clearAndSetSemantics {},
         style = MaterialTheme.typography.labelLarge,
         color = MaterialTheme.colorScheme.onBackground
     )
@@ -233,15 +237,13 @@ private fun FieldLabel(text: String) {
 @Composable
 private fun loginErrorMessage(error: LoginError): String = when (error) {
     LoginError.InvalidCredentials -> stringResource(R.string.login_error_invalid_credentials)
+    LoginError.AccountLocked -> stringResource(R.string.login_error_locked_unknown)
     LoginError.AccountInactive -> stringResource(R.string.login_error_inactive)
     LoginError.NotFieldAgent -> stringResource(R.string.login_error_not_field_agent)
     LoginError.TooManyRequests -> stringResource(R.string.login_error_too_many_requests)
     LoginError.Network -> stringResource(R.string.login_error_network)
-    is LoginError.Unknown -> error.message?.let { stringResource(R.string.login_error_unknown_detail, it) }
-        ?: stringResource(R.string.login_error_unknown)
+    is LoginError.Unknown -> stringResource(R.string.login_error_unknown)
 }
-
-private fun formatCountdown(seconds: Long): String = "%d:%02d".format(seconds / 60, seconds % 60)
 
 @Preview(showBackground = true, heightDp = 800)
 @Composable
@@ -265,7 +267,7 @@ fun LoginContentLockedPreview() {
             state = LoginUiState(
                 email = "agente@inmobiliaria.com",
                 password = "secret",
-                lockedSecondsRemaining = 899
+                error = LoginError.AccountLocked
             ),
             onEmailChanged = {},
             onPasswordChanged = {},
