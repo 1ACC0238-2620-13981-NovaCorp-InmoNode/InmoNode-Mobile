@@ -15,13 +15,27 @@ import javax.inject.Inject
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
     getCurrentUser: GetCurrentUserUseCase,
-    private val signOutUseCase: SignOutUseCase
+    private val signOutUseCase: SignOutUseCase,
+    portfolio: com.novacorp.inmonode_app.features.fieldsales.domain.repositories.PortfolioRepository,
+    prospects: com.novacorp.inmonode_app.features.fieldsales.domain.repositories.ProspectRepository,
+    reservations: com.novacorp.inmonode_app.features.fieldsales.domain.repositories.ReservationRepository,
+    vouchers: com.novacorp.inmonode_app.features.vouchers.domain.VoucherRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ProfileUiState())
     val uiState: StateFlow<ProfileUiState> = _uiState.asStateFlow()
 
     init {
+        viewModelScope.launch {
+            kotlinx.coroutines.flow.combine(portfolio.observePortfolio(),prospects.observeProspects(),
+                reservations.observeReservations(),vouchers.observeVouchers()) { catalog,people,rows,receipts ->
+                Triple(catalog.projects.size,catalog.downloadedAt,people.count { !it.synced } +
+                    rows.count { it.status in listOf(com.novacorp.inmonode_app.features.fieldsales.domain.model.ReservationStatus.PENDING_SYNC,
+                        com.novacorp.inmonode_app.features.fieldsales.domain.model.ReservationStatus.FAILED,
+                        com.novacorp.inmonode_app.features.fieldsales.domain.model.ReservationStatus.FAILED_VALIDATION) } +
+                    receipts.count { it.status==com.novacorp.inmonode_app.features.vouchers.domain.VoucherStatus.READY_TO_SYNC })
+            }.collect { (count,version,pending) -> _uiState.update { it.copy(projectCount=count,catalogVersion=version,pendingCount=pending) } }
+        }
         viewModelScope.launch {
             getCurrentUser().collect { user ->
                 _uiState.update { currentState -> currentState.copy(user = user) }
