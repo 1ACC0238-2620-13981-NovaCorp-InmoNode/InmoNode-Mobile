@@ -1,9 +1,11 @@
 package com.novacorp.inmonode_app.features.iam.infrastructure.local
 
-import android.util.Base64
+import okio.ByteString.Companion.decodeBase64
 import com.google.gson.Gson
+import com.novacorp.inmonode_app.features.iam.domain.SignInInput
 import com.novacorp.inmonode_app.features.iam.domain.User
 import com.novacorp.inmonode_app.features.iam.domain.UserRole
+import com.novacorp.inmonode_app.features.iam.infrastructure.remote.TokenResponseDto
 import javax.inject.Inject
 
 /**
@@ -15,13 +17,29 @@ class JwtDecoder @Inject constructor() {
 
     private val gson = Gson()
 
-    fun decodeUser(token: String): User? = try {
-        val payload = token.split(".")[1]
-        val json = String(Base64.decode(payload, Base64.URL_SAFE), Charsets.UTF_8)
+    fun decodeSession(tokens: TokenResponseDto): User? {
+        if (tokens.tokenType != "Bearer" || tokens.expiresIn <= 0 || tokens.refreshToken.isBlank()) return null
+        return decodeUser(tokens.token)
+    }
+
+    fun decodeUser(token: String): User? = decodeClaims(token, requireUnexpired = true)
+
+    /** Comparison only, never authenticates an expired token or verifies its signature. */
+    fun hasSameIdentity(first: String, second: String): Boolean {
+        val identity = decodeClaims(first, requireUnexpired = false) ?: return false
+        return identity == decodeClaims(second, requireUnexpired = false)
+    }
+
+    private fun decodeClaims(token: String, requireUnexpired: Boolean): User? = try {
+        val parts = token.split(".")
+        require(parts.size == 3 && parts.all { it.isNotBlank() })
+        val payload = parts[1]
+        val json = requireNotNull(payload.decodeBase64()).utf8()
         val claims = gson.fromJson(json, JwtClaimsDto::class.java)
         val id = claims.sub?.toLongOrNull()
         val email = claims.email
-        if (id == null || email == null) {
+        if (id == null || id <= 0 || email == null || !SignInInput.isValidEmail(email) ||
+            (requireUnexpired && claims.exp <= System.currentTimeMillis() / 1000)) {
             null
         } else {
             User(
@@ -37,6 +55,7 @@ class JwtDecoder @Inject constructor() {
     private data class JwtClaimsDto(
         val sub: String?,
         val email: String?,
-        val role: String?
+        val role: String?,
+        val exp: Long
     )
 }
