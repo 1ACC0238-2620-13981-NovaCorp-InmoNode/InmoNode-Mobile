@@ -1,3 +1,7 @@
 package com.novacorp.inmonode_app.features.fieldsales.domain.repositories
 
-// TODO: US-11, US-12 - Upload pending prospects/reservations and apply results.
+import com.novacorp.inmonode_app.features.fieldsales.domain.model.SyncSummary
+
+interface FieldSyncRepository {
+    suspend fun synchronize(): Result<SyncSummary>
+}
