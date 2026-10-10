@@ -1,3 +1,8 @@
 package com.novacorp.inmonode_app.features.fieldsales.application
 
-// TODO: US-02 - Downloads the portfolio (ETag / 304) and caches it.
+import com.novacorp.inmonode_app.features.fieldsales.domain.repositories.PortfolioRepository
+import javax.inject.Inject
+
+class DownloadPortfolioUseCase @Inject constructor(private val repository: PortfolioRepository) {
+    suspend operator fun invoke() = repository.download()
+}
