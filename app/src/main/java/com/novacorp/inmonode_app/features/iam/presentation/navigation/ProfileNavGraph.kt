@@ -12,10 +12,10 @@ data object ProfileNavGraphRoute
 @Serializable
 data object ProfileRoute
 
-fun NavGraphBuilder.profileNavGraph() {
+fun NavGraphBuilder.profileNavGraph(onPortfolio: () -> Unit = {}) {
     navigation<ProfileNavGraphRoute>(startDestination = ProfileRoute) {
         composable<ProfileRoute> {
-            ProfileScreen()
+            ProfileScreen(onPortfolio = onPortfolio)
         }
     }
 }
