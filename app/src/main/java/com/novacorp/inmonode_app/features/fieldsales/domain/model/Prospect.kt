@@ -1,3 +1,11 @@
 package com.novacorp.inmonode_app.features.fieldsales.domain.model
 
-// TODO: US-04 - Prospect aggregate (UUID generated on device, document, fullName, phone, maritalStatus, syncStatus).
+data class Prospect(
+    val id: String,
+    val document: String,
+    val fullName: String,
+    val phone: String,
+    val maritalStatus: String?,
+    val registeredAt: String,
+    val synced: Boolean = false,
+)
