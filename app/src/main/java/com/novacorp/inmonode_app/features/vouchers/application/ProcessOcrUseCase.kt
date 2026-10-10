@@ -1,3 +1,8 @@
 package com.novacorp.inmonode_app.features.vouchers.application
 
-// TODO: US-09, US-10 - Runs OCR; below 40% legibility requires recapture.
+import com.novacorp.inmonode_app.features.vouchers.domain.VoucherRepository
+import javax.inject.Inject
+
+class ProcessOcrUseCase @Inject constructor(private val repository: VoucherRepository) {
+    suspend operator fun invoke(voucherId: String) = repository.processOcr(voucherId)
+}

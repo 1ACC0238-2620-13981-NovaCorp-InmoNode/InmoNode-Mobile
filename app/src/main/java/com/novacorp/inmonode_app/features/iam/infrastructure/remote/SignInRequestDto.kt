@@ -1,3 +1,6 @@
 package com.novacorp.inmonode_app.features.iam.infrastructure.remote
 
-// TODO: US-01 - {email, password}.
+data class SignInRequestDto(
+    val email: String,
+    val password: String
+)

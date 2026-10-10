@@ -1,3 +1,8 @@
 package com.novacorp.inmonode_app.features.fieldsales.application
 
-// TODO: US-12 - Reassigns a conflicted reservation to another lot without retyping the prospect.
+import com.novacorp.inmonode_app.features.fieldsales.domain.repositories.ReservationRepository
+import javax.inject.Inject
+
+class ResolveConflictUseCase @Inject constructor(private val repository: ReservationRepository) {
+    suspend operator fun invoke(reservationId: String, newLotId: Long) = repository.reassign(reservationId, newLotId)
+}

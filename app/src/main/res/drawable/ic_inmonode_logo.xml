@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- InmoNode brand mark: location pin over cadastral lots (Project Report, branding). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="76dp"
+    android:height="80dp"
+    android:viewportWidth="76"
+    android:viewportHeight="80">
+    <group
+        android:translateX="-12"
+        android:translateY="-9">
+        <path
+            android:fillColor="@color/light_green"
+            android:pathData="M50,36.3 L64.5,43.5 L50,50.7 L35.5,43.5 Z" />
+        <path
+            android:fillColor="@color/light_green"
+            android:pathData="M33,44.8 L47.5,52 L33,59.2 L18.5,52 Z" />
+        <path
+            android:fillColor="@color/forest_green"
+            android:pathData="M67,44.8 L81.5,52 L67,59.2 L52.5,52 Z" />
+        <path
+            android:fillColor="@color/forest_green"
+            android:pathData="M50,53.3 L64.5,60.5 L50,67.7 L35.5,60.5 Z" />
+        <path
+            android:pathData="M15,61 L50,78.5 L85,61"
+            android:strokeWidth="3.5"
+            android:strokeColor="@color/logo_ink"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round" />
+        <path
+            android:pathData="M15,68.5 L50,86 L85,68.5"
+            android:strokeWidth="3.5"
+            android:strokeColor="@color/logo_ink"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round" />
+        <path
+            android:fillColor="@color/logo_ink"
+            android:fillType="evenOdd"
+            android:pathData="M50,38 C46.5,32.5 41,27.5 41,20 A9,9 0 1,1 59,20 C59,27.5 53.5,32.5 50,38 Z M50,16.5 A3.5,3.5 0 1,0 50,23.5 A3.5,3.5 0 1,0 50,16.5 Z" />
+    </group>
+</vector>

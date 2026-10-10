@@ -1,3 +1,8 @@
 package com.novacorp.inmonode_app.features.vouchers.application
 
-// TODO: US-54 - Reads payment evidences and review decisions of a reservation.
+import com.novacorp.inmonode_app.features.vouchers.domain.VoucherRepository
+import javax.inject.Inject
+
+class GetPaymentEvidencesUseCase @Inject constructor(private val repository: VoucherRepository) {
+    suspend operator fun invoke(reservationId: String) = repository.getPaymentEvidences(reservationId)
+}
