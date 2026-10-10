@@ -1,6 +1,7 @@
 package com.novacorp.inmonode_app.core.network
 
 import com.novacorp.inmonode_app.features.iam.infrastructure.local.TokenManager
+import com.novacorp.inmonode_app.features.iam.infrastructure.local.JwtDecoder
 import com.novacorp.inmonode_app.features.iam.infrastructure.remote.AuthService
 import com.novacorp.inmonode_app.features.iam.infrastructure.remote.RefreshTokenRequestDto
 import dagger.Lazy
@@ -23,7 +24,8 @@ import javax.inject.Singleton
 @Singleton
 class TokenAuthenticator @Inject constructor(
     private val tokenManager: TokenManager,
-    private val authService: Lazy<AuthService>
+    private val authService: Lazy<AuthService>,
+    private val jwtDecoder: JwtDecoder = JwtDecoder()
 ) : Authenticator {
 
     private val lock = Any()
@@ -37,12 +39,15 @@ class TokenAuthenticator @Inject constructor(
 
         synchronized(lock) {
             return runBlocking {
-                val currentToken = tokenManager.getAccessToken()
-                if (currentToken != null && currentToken != failedToken) {
+                val (currentToken, refreshToken) = tokenManager.getTokenSnapshot()
+                if (failedToken == null || currentToken == null || !jwtDecoder.hasSameIdentity(failedToken, currentToken)) {
+                    return@runBlocking null
+                }
+                if (currentToken != failedToken) {
                     return@runBlocking request.withToken(currentToken)
                 }
 
-                val refreshToken = tokenManager.getRefreshToken() ?: return@runBlocking null
+                if (refreshToken == null) return@runBlocking null
                 val refreshResponse = try {
                     authService.get().refresh(RefreshTokenRequestDto(refreshToken))
                 } catch (e: IOException) {
@@ -51,11 +56,14 @@ class TokenAuthenticator @Inject constructor(
 
                 val tokens = refreshResponse.body()
                 if (refreshResponse.isSuccessful && tokens != null) {
-                    tokenManager.saveTokens(tokens.token, tokens.refreshToken)
-                    request.withToken(tokens.token)
+                    if (jwtDecoder.decodeSession(tokens)?.isFieldAgent != true) return@runBlocking null
+                    if (!jwtDecoder.hasSameIdentity(failedToken, tokens.token)) return@runBlocking null
+                    if (tokenManager.rotateIfCurrent(refreshToken, tokens.token, tokens.refreshToken)) {
+                        request.withToken(tokens.token)
+                    } else null
                 } else {
                     // Refresh token expired or revoked: the session is over
-                    tokenManager.clearTokens()
+                    if (refreshResponse.code() == 401) tokenManager.clearIfCurrent(refreshToken)
                     null
                 }
             }
