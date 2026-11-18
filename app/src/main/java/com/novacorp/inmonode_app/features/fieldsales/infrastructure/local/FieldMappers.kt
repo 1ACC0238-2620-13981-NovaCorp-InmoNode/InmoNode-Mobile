@@ -33,7 +33,8 @@ internal fun ReservationEntity.toDomain() = Reservation(id, lotId, prospectId, i
     reservedAt, ReservationStatus.valueOf(status), blockedUntil, serverStatus, conflictReason,
     NegotiationTerms(discountAmount?.toBigDecimal(), bonus, negotiationNotes))
 internal fun ProspectEntity.toRecord() = ProspectRecordDto(id, document, fullName, phone, registeredAt)
-internal fun ReservationEntity.toRecord() = ReservationRecordDto(id, lotId, prospectId, initialAmount.toBigDecimal(), reservedAt)
+internal fun ReservationEntity.toRecord() = ReservationRecordDto(id, lotId, prospectId, initialAmount.toBigDecimal(), reservedAt,
+    discountAmount?.toBigDecimal(), bonus, negotiationNotes)
 
 internal fun ReservationEntity.holdsLot(now: Instant = Instant.now()): Boolean = when (status) {
     "DRAFT", "PENDING_SYNC", "FAILED", "FAILED_VALIDATION" -> true
