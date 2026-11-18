@@ -15,19 +15,38 @@ import javax.inject.Singleton
 @Singleton
 class ConnectivityMonitor @Inject constructor(@ApplicationContext context: Context) {
     private val manager = context.getSystemService(ConnectivityManager::class.java)
-    private fun isValidated(): Boolean = manager.getNetworkCapabilities(manager.activeNetwork)?.let {
-        it.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
-            it.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
-    } == true
 
     val isOnline: Flow<Boolean> = callbackFlow {
+        val lock = Any()
+        val tracker = DefaultNetworkTracker<Network>()
+        var reported = false
+        fun report(change: DefaultNetworkTracker<Network>.() -> Unit) {
+            synchronized(lock) {
+                reported = true
+                tracker.change()
+                trySend(tracker.isOnline)
+            }
+        }
         val callback = object : ConnectivityManager.NetworkCallback() {
-            override fun onAvailable(network: Network) { trySend(isValidated()) }
-            override fun onLost(network: Network) { trySend(isValidated()) }
-            override fun onCapabilitiesChanged(network: Network, capabilities: NetworkCapabilities) { trySend(isValidated()) }
+            override fun onAvailable(network: Network) { report { onAvailable(network, isValidated(network)) } }
+            override fun onCapabilitiesChanged(network: Network, capabilities: NetworkCapabilities) {
+                report { onCapabilitiesChanged(network, capabilities.isValidatedInternet()) }
+            }
+            override fun onLost(network: Network) { report { onLost(network) } }
         }
         manager.registerDefaultNetworkCallback(callback)
-        trySend(isValidated())
+        // The first value comes from activeNetwork only while no callback has arrived; callbacks always win.
+        synchronized(lock) {
+            if (!reported) manager.activeNetwork?.let { tracker.onAvailable(it, isValidated(it)) }
+            trySend(tracker.isOnline)
+        }
         awaitClose { manager.unregisterNetworkCallback(callback) }
     }.distinctUntilChanged()
+
+    private fun isValidated(network: Network): Boolean =
+        manager.getNetworkCapabilities(network)?.isValidatedInternet() == true
 }
+
+private fun NetworkCapabilities.isValidatedInternet(): Boolean =
+    hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
+        hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
