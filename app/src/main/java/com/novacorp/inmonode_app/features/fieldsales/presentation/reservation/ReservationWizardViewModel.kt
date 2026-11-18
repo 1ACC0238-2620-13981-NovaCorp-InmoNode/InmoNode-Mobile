@@ -6,11 +6,13 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import com.novacorp.inmonode_app.features.fieldsales.domain.repositories.*
 import com.novacorp.inmonode_app.features.fieldsales.application.*
+import com.novacorp.inmonode_app.features.fieldsales.domain.model.NegotiationTerms
 @HiltViewModel
 class ReservationWizardViewModel @Inject constructor(portfolio:PortfolioRepository,prospects:ProspectRepository,
  reservations:ReservationRepository,private val begin:BeginReservationUseCase,private val confirm:ReserveLotUseCase,
  private val cancel:CancelReservationDraftUseCase,private val complete:CompleteProspectUseCase,private val saved:SavedStateHandle):ViewModel() {
- private val _uiState=MutableStateFlow(ReservationWizardUiState(prospectId=saved["prospectId"],amount=saved["amount"]?:""))
+ private val _uiState=MutableStateFlow(ReservationWizardUiState(prospectId=saved["prospectId"],amount=saved["amount"]?:"",
+  discount=saved["discount"]?:"",bonus=saved["bonus"]?:"",notes=saved["notes"]?:""))
  val uiState=_uiState.asStateFlow()
  init {
   viewModelScope.launch { saved.getStateFlow<String?>("prospectId",null).collect { id -> _uiState.update { it.copy(prospectId=id) } } }
@@ -23,11 +25,16 @@ class ReservationWizardViewModel @Inject constructor(portfolio:PortfolioReposito
   } } }
  fun select(id:String) { saved["prospectId"]=id;_uiState.update { it.copy(prospectId=id) } }
  fun amount(v:String) { saved["amount"]=v;_uiState.update { it.copy(amount=v) } }
+ fun discount(v:String) { saved["discount"]=v;_uiState.update { it.copy(discount=v) } }
+ fun bonus(v:String) { val text=v.take(NegotiationTerms.MAX_BONUS_LENGTH);saved["bonus"]=text;_uiState.update { it.copy(bonus=text) } }
+ fun notes(v:String) { val text=v.take(NegotiationTerms.MAX_NOTES_LENGTH);saved["notes"]=text;_uiState.update { it.copy(notes=text) } }
  fun begin() { if(_uiState.value.working)return;val s=_uiState.value
   val lot=s.lot;val person=s.prospectId;val amount=s.amount.replace(',','.').toBigDecimalOrNull()
   if(lot==null||person==null||amount==null) { _uiState.update { it.copy(errorMessage="Selecciona un prospecto e ingresa un monto válido.") };return }
+  // The repository checks the discount range again before storing anything (US-58, scenario 2).
+  val terms=s.terms?:run { _uiState.update { it.copy(errorMessage=ReservationWizardUiState.INVALID_DISCOUNT) };return }
   viewModelScope.launch { _uiState.update { it.copy(working=true,errorMessage=null) }
-   begin(lot.id,person,amount).fold({ row -> saved["reservationId"]=row.id;_uiState.update { it.copy(working=false,reservation=row) } },
+   begin(lot.id,person,amount,terms).fold({ row -> saved["reservationId"]=row.id;_uiState.update { it.copy(working=false,reservation=row) } },
     { e -> _uiState.update { it.copy(working=false,errorMessage=e.message) } }) } }
  fun confirm() { val row=_uiState.value.reservation?:return;if(_uiState.value.working)return
   viewModelScope.launch { _uiState.update { it.copy(working=true,errorMessage=null) }

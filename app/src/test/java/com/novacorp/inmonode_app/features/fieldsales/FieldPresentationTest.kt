@@ -69,6 +69,39 @@ class FieldPresentationTest {
    runCurrent();assertEquals("900",vm.uiState.value.amount);assertEquals(person,vm.uiState.value.prospect);vm.viewModelScope.cancel()
   } finally { Dispatchers.resetMain() }
  }
+ @Test fun typedNegotiationTermsReachTheDraft()=runTest {
+  Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+  try { val rows=ReservationsFake();val vm=wizard(PortfolioFake(),PeopleFake(),rows,SavedStateHandle(mapOf("lotId" to 1L)))
+   runCurrent();vm.select(person.id);vm.amount("500");vm.discount("1500,50");vm.bonus(" Cerco perimétrico ");vm.notes("")
+   assertEquals(0,BigDecimal("8499.50").compareTo(vm.uiState.value.finalPrice));assertNull(vm.uiState.value.discountError)
+   vm.begin();runCurrent()
+   assertEquals(NegotiationTerms(BigDecimal("1500.50"),"Cerco perimétrico",null),rows.terms);vm.viewModelScope.cancel()
+  } finally { Dispatchers.resetMain() }
+ }
+ @Test fun discountOutOfRangeShowsTheValidRangeAndHidesTheFinalPrice()=runTest {
+  Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+  try { val vm=wizard(PortfolioFake(),PeopleFake(),ReservationsFake(),SavedStateHandle(mapOf("lotId" to 1L)))
+   runCurrent();vm.discount("10000")
+   assertEquals("El descuento debe estar entre PEN 0.00 y PEN 9999.99.",vm.uiState.value.discountError)
+   assertNull(vm.uiState.value.finalPrice);vm.viewModelScope.cancel()
+  } finally { Dispatchers.resetMain() }
+ }
+ @Test fun unreadableDiscountNeverCreatesADraft()=runTest {
+  Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+  try { val rows=ReservationsFake();val vm=wizard(PortfolioFake(),PeopleFake(),rows,SavedStateHandle(mapOf("lotId" to 1L)))
+   runCurrent();vm.select(person.id);vm.amount("500");vm.discount("abc");vm.begin();runCurrent()
+   assertEquals(0,rows.calls);assertEquals("Ingresa un descuento válido.",vm.uiState.value.errorMessage);vm.viewModelScope.cancel()
+  } finally { Dispatchers.resetMain() }
+ }
+ @Test fun recreatedWizardRestoresNegotiationAndCapsTexts()=runTest {
+  Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+  try { val saved=SavedStateHandle(mapOf("lotId" to 1L,"discount" to "200","bonus" to "Cerco","notes" to "Pago en 2 partes"))
+   val vm=wizard(PortfolioFake(),PeopleFake(),ReservationsFake(),saved)
+   runCurrent();assertEquals(NegotiationTerms(BigDecimal("200"),"Cerco","Pago en 2 partes"),vm.uiState.value.terms)
+   vm.bonus("b".repeat(200));assertEquals(150,vm.uiState.value.bonus.length);assertEquals(150,saved.get<String>("bonus")?.length)
+   vm.viewModelScope.cancel()
+  } finally { Dispatchers.resetMain() }
+ }
  @Test fun removedLotInvalidatesDisplayedSimulation()=runTest {
   Dispatchers.setMain(StandardTestDispatcher(testScheduler))
   try { val portfolio=PortfolioFake();val vm=QuickSimulationViewModel(portfolio,SimulateFinancingUseCase(),SavedStateHandle(mapOf("lotId" to 1L)))

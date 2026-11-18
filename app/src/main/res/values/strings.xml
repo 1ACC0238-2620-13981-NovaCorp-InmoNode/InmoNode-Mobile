@@ -110,6 +110,13 @@
     <string name="reservation_pending">Pendiente</string>
     <string name="reservation_synced">Sincronizado</string>
     <string name="reservation_cancel_draft">Descartar borrador</string>
+    <string name="reservation_negotiation">Condiciones de negociación (opcional)</string>
+    <string name="reservation_discount">Descuento autorizado</string>
+    <string name="reservation_discount_range">Entre %1$s 0.00 y %1$s %2$s</string>
+    <string name="reservation_bonus">Bono o beneficio</string>
+    <string name="reservation_notes">Observaciones</string>
+    <string name="reservation_final_price">Precio final</string>
+    <string name="reservation_text_count">%1$d/%2$d</string>
     <string name="contract_ack">He revisado los datos y el contrato preliminar.</string>
     <string name="contract_missing">Faltan datos para generar el contrato. El prospecto debe tener estado civil.</string>
     <string name="voucher_capture">Escanear voucher</string>
