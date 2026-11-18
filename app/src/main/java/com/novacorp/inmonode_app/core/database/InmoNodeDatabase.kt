@@ -1,5 +1,6 @@
 package com.novacorp.inmonode_app.core.database
 
+import androidx.room3.AutoMigration
 import androidx.room3.Database
 import androidx.room3.RoomDatabase
 import androidx.room3.immediateTransaction
@@ -10,7 +11,8 @@ import com.novacorp.inmonode_app.features.vouchers.infrastructure.local.VoucherE
 import com.novacorp.inmonode_app.features.vouchers.infrastructure.local.PaymentEvidencesEntity
 
 @Database(entities = [ProjectEntity::class, LotEntity::class, ProspectEntity::class,
-    ReservationEntity::class, SyncMetadataEntity::class, VoucherEntity::class, PaymentEvidencesEntity::class], version = 1, exportSchema = true)
+    ReservationEntity::class, SyncMetadataEntity::class, VoucherEntity::class, PaymentEvidencesEntity::class], version = 2, exportSchema = true,
+    autoMigrations = [AutoMigration(from = 1, to = 2)])
 abstract class InmoNodeDatabase : RoomDatabase() {
     abstract fun portfolioDao(): PortfolioDao
     abstract fun lotDao(): LotDao

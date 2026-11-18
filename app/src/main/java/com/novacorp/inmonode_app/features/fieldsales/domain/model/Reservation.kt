@@ -12,6 +12,7 @@ data class Reservation(
     val blockedUntil: String? = null,
     val serverStatus: String? = null,
     val conflictReason: String? = null,
+    val terms: NegotiationTerms = NegotiationTerms(),
 )
 
 data class SyncSummary(val prospectsSynced: Int, val reservationsSynced: Int, val conflicts: Int)
