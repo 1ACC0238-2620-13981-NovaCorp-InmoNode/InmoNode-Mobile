@@ -22,7 +22,10 @@ fun SeparationDetailScreen(modifier:Modifier=Modifier,viewModel:SeparationsViewM
   while(true) { now=Instant.now();kotlinx.coroutines.delay(1000) }
  }
  FieldPage(stringResource(R.string.separation_detail),modifier,onBack) {
-  s.selected?.let { row ->
+  // An if/else, not `?.let { } ?:`: the let block ends with `evidences?.let`, so it yields null before the
+  // first evidence load and the elvis branch rendered the empty state under a valid separation.
+  val row=s.selected
+  if(row==null) Text(stringResource(R.string.field_empty)) else {
    Text(s.lot(row.lotId)?.code.orEmpty(),style=MaterialTheme.typography.headlineSmall)
    FieldValue(stringResource(R.string.field_name),s.prospects.firstOrNull { it.id==row.prospectId }?.fullName.orEmpty())
    FieldValue(stringResource(R.string.field_amount),row.initialAmount.toPlainString())
@@ -54,6 +57,6 @@ fun SeparationDetailScreen(modifier:Modifier=Modifier,viewModel:SeparationsViewM
     if(result.status=="REJECTED"&&result.waitingUntil?.let { runCatching { Instant.parse(it)>Instant.now() }.getOrDefault(false) }==true)
      PrimaryButton(stringResource(R.string.separation_replace)) { onReplace(row.id) }
    }
-  }?:Text(stringResource(R.string.field_empty))
+  }
  }
 }
