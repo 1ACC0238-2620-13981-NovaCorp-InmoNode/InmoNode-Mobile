@@ -32,8 +32,10 @@ class FieldPresentationTest {
   val state=MutableStateFlow<List<Reservation>>(emptyList());var calls=0
   var gate:CompletableDeferred<Unit>?=null
   override fun observeReservations():Flow<List<Reservation>> = state
-  override suspend fun createDraft(lotId:Long,prospectId:String,initialAmount:BigDecimal):Result<Reservation> {
-   calls++;gate?.await();val row=Reservation("draft",lotId,prospectId,initialAmount,"2026-10-01",ReservationStatus.DRAFT)
+  var terms:NegotiationTerms?=null
+  override suspend fun createDraft(lotId:Long,prospectId:String,initialAmount:BigDecimal,terms:NegotiationTerms):Result<Reservation> {
+   calls++;this.terms=terms;gate?.await()
+   val row=Reservation("draft",lotId,prospectId,initialAmount,"2026-10-01",ReservationStatus.DRAFT,terms=terms)
    state.value=listOf(row);return Result.success(row)
   }
   override suspend fun confirmDraft(reservationId:String):Result<Reservation> = Result.failure(IllegalStateException("Voucher pendiente"))
