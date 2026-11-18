@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -5,6 +7,18 @@ plugins {
     alias(libs.plugins.hilt)
     alias(libs.plugins.kotlin.serialization)
 }
+
+// Release signing is read from local.properties (developer machine) or environment
+// variables (CI); the keystore and its passwords are never committed.
+val localProperties = Properties().apply {
+    val file = rootProject.file("local.properties")
+    if (file.exists()) file.inputStream().use(::load)
+}
+
+fun releaseSigningValue(property: String, environmentVariable: String): String? =
+    localProperties.getProperty(property) ?: System.getenv(environmentVariable)
+
+val releaseStoreFile = releaseSigningValue("release.storeFile", "INMONODE_RELEASE_STORE_FILE")
 
 android {
     namespace = "com.novacorp.inmonode_app"
@@ -24,8 +38,21 @@ android {
         buildConfigField("String", "BASE_URL", "\"https://inmonode-backend.onrender.com/api/v1/\"")
     }
 
+    signingConfigs {
+        create("release") {
+            if (releaseStoreFile != null) {
+                storeFile = rootProject.file(releaseStoreFile)
+                storePassword = releaseSigningValue("release.storePassword", "INMONODE_RELEASE_STORE_PASSWORD")
+                keyAlias = releaseSigningValue("release.keyAlias", "INMONODE_RELEASE_KEY_ALIAS")
+                keyPassword = releaseSigningValue("release.keyPassword", "INMONODE_RELEASE_KEY_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
         release {
+            // Without a configured keystore the release APK is still built, but unsigned.
+            if (releaseStoreFile != null) signingConfig = signingConfigs.getByName("release")
             optimization {
                 enable = true
                 packageScope = setOf("androidx.**", "kotlin.**", "kotlinx.**")
