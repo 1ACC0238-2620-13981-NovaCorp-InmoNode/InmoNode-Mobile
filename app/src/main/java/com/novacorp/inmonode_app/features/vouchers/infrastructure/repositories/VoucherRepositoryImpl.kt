@@ -183,5 +183,18 @@ class VoucherRepositoryImpl @Inject constructor(
         voucherGson.fromJson(row.payloadJson, PaymentEvidencesDto::class.java).toDomain(row.fetchedAt)
     }
 
+    override suspend fun discardCancelled(): Result<Unit> = operationResult {
+        mutationMutex.withLock {
+            val owner = session.requireOwner()
+            val rows = dao.ofCancelledReservations(owner)
+            if (rows.isEmpty()) return@withLock
+            dao.delete(owner, rows.map { it.id })
+            // Files go only after their rows, so a failed delete never leaves a row pointing at a missing image.
+            withContext(kotlinx.coroutines.NonCancellable + Dispatchers.IO) {
+                rows.forEach { row -> File(row.imagePath).delete(); row.uploadPath?.let { File(it).delete() } }
+            }
+        }
+    }
+
     companion object { private const val MAX_CAPTURE_BYTES = 40L * 1024 * 1024 }
 }
