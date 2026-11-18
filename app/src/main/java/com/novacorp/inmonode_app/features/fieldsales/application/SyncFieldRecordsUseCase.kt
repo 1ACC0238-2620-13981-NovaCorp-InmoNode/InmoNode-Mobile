@@ -21,6 +21,8 @@ class SyncFieldRecordsUseCase @Inject constructor(private val fields: FieldSyncR
     suspend operator fun invoke(): Result<SyncSummary> = mutex.withLock {
         val owner = auth.currentUser.first()?.takeIf { it.isFieldAgent }?.id
             ?: return@withLock Result.failure(IllegalStateException("Inicia sesión como agente de campo."))
+        // Vouchers left by discarded drafts would otherwise stay queued forever; a failure here must not block the sync.
+        vouchers.discardCancelled()
         val summary = fields.synchronize().getOrElse { return@withLock Result.failure(it) }
         if (auth.currentUser.first()?.id != owner) return@withLock sessionChanged()
         val syncedIds = reservations.observeReservations().first()
