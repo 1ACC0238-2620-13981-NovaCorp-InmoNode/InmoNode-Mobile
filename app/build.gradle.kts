@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -5,6 +7,18 @@ plugins {
     alias(libs.plugins.hilt)
     alias(libs.plugins.kotlin.serialization)
 }
+
+// Release signing is read from local.properties (developer machine) or environment
+// variables (CI); the keystore and its passwords are never committed.
+val localProperties = Properties().apply {
+    val file = rootProject.file("local.properties")
+    if (file.exists()) file.inputStream().use(::load)
+}
+
+fun releaseSigningValue(property: String, environmentVariable: String): String? =
+    localProperties.getProperty(property) ?: System.getenv(environmentVariable)
+
+val releaseStoreFile = releaseSigningValue("release.storeFile", "INMONODE_RELEASE_STORE_FILE")
 
 android {
     namespace = "com.novacorp.inmonode_app"
@@ -16,19 +30,34 @@ android {
         applicationId = "com.novacorp.inmonode_app"
         minSdk = 24
         targetSdk = 37
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "1.1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         buildConfigField("String", "BASE_URL", "\"https://inmonode-backend.onrender.com/api/v1/\"")
     }
 
+    signingConfigs {
+        create("release") {
+            if (releaseStoreFile != null) {
+                storeFile = rootProject.file(releaseStoreFile)
+                storePassword = releaseSigningValue("release.storePassword", "INMONODE_RELEASE_STORE_PASSWORD")
+                keyAlias = releaseSigningValue("release.keyAlias", "INMONODE_RELEASE_KEY_ALIAS")
+                keyPassword = releaseSigningValue("release.keyPassword", "INMONODE_RELEASE_KEY_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
         release {
+            // Without a configured keystore the release APK is still built, but unsigned.
+            if (releaseStoreFile != null) signingConfig = signingConfigs.getByName("release")
+            // R8 stays off: partial optimization of kotlin.** crashed the release build at startup
+            // (IllegalAccessError on a repackaged kotlin.text class), and full R8 would rename the
+            // Gson DTO fields. Re-enable it only together with keep rules for the remote DTOs.
             optimization {
-                enable = true
-                packageScope = setOf("androidx.**", "kotlin.**", "kotlinx.**")
+                enable = false
             }
         }
     }
