@@ -41,7 +41,7 @@ class FieldPresentationTest {
   override suspend fun reassign(reservationId:String,newLotId:Long):Result<Reservation> = Result.failure(IllegalStateException())
  }
  private fun wizard(p:PortfolioRepository,people:ProspectRepository,rows:ReservationRepository,saved:SavedStateHandle)=
-  ReservationWizardViewModel(p,people,rows,BeginReservationUseCase(rows),ReserveLotUseCase(rows),CancelReservationDraftUseCase(rows),CompleteProspectUseCase(people),saved)
+  ReservationWizardViewModel(p,people,rows,BeginReservationUseCase(rows),ReserveLotUseCase(rows),CancelReservationDraftUseCase(rows,VoucherRepositoryFake()),CompleteProspectUseCase(people),saved)
  @Test fun doubleTapCreatesOnlyOneDurableDraft()=runTest {
   Dispatchers.setMain(StandardTestDispatcher(testScheduler))
   try { val rows=ReservationsFake().apply { gate=CompletableDeferred() }

@@ -9,4 +9,6 @@ interface VoucherRepository {
     suspend fun review(voucherId: String, data: OcrData): Result<Voucher>
     suspend fun upload(voucherId: String): Result<Voucher>
     suspend fun getPaymentEvidences(reservationId: String): Result<PaymentEvidences>
+    /** Deletes the local vouchers, and their images, of reservations cancelled before they were synchronized. */
+    suspend fun discardCancelled(): Result<Unit>
 }
