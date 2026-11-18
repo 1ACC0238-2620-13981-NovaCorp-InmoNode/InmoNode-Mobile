@@ -106,6 +106,7 @@
     <string name="reservation_saved">Separación registrada</string>
     <string name="reservation_saved_help">La separación y su voucher están guardados. Sincroniza para confirmar la disponibilidad con el servidor.</string>
     <string name="reservation_draft">Borrador</string>
+    <string name="reservation_draft_help">Al continuar se guarda un borrador en este dispositivo. Después capturarás el voucher y revisarás el contrato preliminar.</string>
     <string name="reservation_conflict">Conflicto de disponibilidad</string>
     <string name="reservation_pending">Pendiente</string>
     <string name="reservation_synced">Sincronizado</string>

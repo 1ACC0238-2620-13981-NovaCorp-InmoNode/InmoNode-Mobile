@@ -36,7 +36,7 @@ fun ReservationWizardScreen(modifier:Modifier=Modifier,viewModel:ReservationWiza
   TextButton(onClick=onNewProspect) { Text(stringResource(R.string.prospect_new)) }
   OutlinedTextField(s.amount,viewModel::amount,label={Text(stringResource(R.string.field_amount))},modifier=Modifier.fillMaxWidth(),keyboardOptions=KeyboardOptions(keyboardType=KeyboardType.Decimal),singleLine=true,shape=RoundedCornerShape(8.dp))
   NegotiationFields(s,viewModel)
-  Text(stringResource(R.string.reservation_saved_help),style=MaterialTheme.typography.bodySmall)
+  Text(stringResource(R.string.reservation_draft_help),style=MaterialTheme.typography.bodySmall)
   FieldError(s.errorMessage)
 
  }
