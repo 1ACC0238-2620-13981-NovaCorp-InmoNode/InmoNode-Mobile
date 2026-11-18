@@ -13,8 +13,9 @@ fun ReservationConfirmationScreen(modifier:Modifier=Modifier,viewModel:Reservati
  FieldPage(stringResource(R.string.reservation_saved),modifier) {
   Text(stringResource(R.string.reservation_saved_help))
   FieldValue(stringResource(R.string.field_name),s.prospect?.fullName.orEmpty())
-  FieldValue(stringResource(R.string.nav_map),s.lot?.code.orEmpty())
-  FieldValue(stringResource(R.string.field_amount),s.reservation?.initialAmount?.toPlainString().orEmpty())
+  FieldValue(stringResource(R.string.reservation_lot),s.lot?.code.orEmpty())
+  FieldValue(stringResource(R.string.reservation_final_price),money(s.lot?.currency,s.lot?.price?.let { s.reservation?.terms?.finalPrice(it) }))
+  FieldValue(stringResource(R.string.field_amount),money(s.lot?.currency,s.reservation?.initialAmount))
   PrimaryButton(stringResource(R.string.nav_sync),onClick=onSync)
   PrimaryButton(stringResource(R.string.nav_map),onClick=onMap)
  }

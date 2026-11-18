@@ -116,6 +116,8 @@
     <string name="reservation_bonus">Bono o beneficio</string>
     <string name="reservation_notes">Observaciones</string>
     <string name="reservation_final_price">Precio final</string>
+    <string name="reservation_lot">Lote</string>
+    <string name="reservation_lot_price">Precio del lote</string>
     <string name="reservation_text_count">%1$d/%2$d</string>
     <string name="contract_ack">He revisado los datos y el contrato preliminar.</string>
     <string name="contract_missing">Faltan datos para generar el contrato. El prospecto debe tener estado civil.</string>

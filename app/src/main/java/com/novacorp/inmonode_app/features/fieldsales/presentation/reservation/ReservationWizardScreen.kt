@@ -14,7 +14,6 @@ import com.novacorp.inmonode_app.R
 import com.novacorp.inmonode_app.core.designsystem.components.*
 import com.novacorp.inmonode_app.features.fieldsales.domain.model.NegotiationTerms
 import com.novacorp.inmonode_app.features.fieldsales.presentation.reservation.components.WizardStepper
-import java.math.RoundingMode
 @Composable
 fun ReservationWizardScreen(modifier:Modifier=Modifier,viewModel:ReservationWizardViewModel=hiltViewModel(),onBack:()->Unit,
  onNewProspect:()->Unit,onCapture:(String)->Unit) {
@@ -51,7 +50,7 @@ private fun NegotiationFields(s:ReservationWizardUiState,viewModel:ReservationWi
  OutlinedTextField(s.discount,viewModel::discount,label={Text(stringResource(R.string.reservation_discount))},modifier=Modifier.fillMaxWidth(),
   keyboardOptions=KeyboardOptions(keyboardType=KeyboardType.Decimal),singleLine=true,shape=RoundedCornerShape(8.dp),isError=s.discountError!=null,
   supportingText={ Text(s.discountError?:stringResource(R.string.reservation_discount_range,lot.currency,NegotiationTerms.maxDiscount(lot.price).toPlainString())) })
- s.finalPrice?.let { price -> FieldValue(stringResource(R.string.reservation_final_price),"${lot.currency} ${price.setScale(2,RoundingMode.DOWN).toPlainString()}") }
+ s.finalPrice?.let { price -> FieldValue(stringResource(R.string.reservation_final_price),money(lot.currency,price)) }
  OutlinedTextField(s.bonus,viewModel::bonus,label={Text(stringResource(R.string.reservation_bonus))},modifier=Modifier.fillMaxWidth(),
   singleLine=true,shape=RoundedCornerShape(8.dp),
   supportingText={ Text(stringResource(R.string.reservation_text_count,s.bonus.length,NegotiationTerms.MAX_BONUS_LENGTH)) })

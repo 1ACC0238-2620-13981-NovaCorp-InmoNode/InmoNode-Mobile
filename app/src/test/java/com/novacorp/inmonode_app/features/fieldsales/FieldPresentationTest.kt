@@ -5,6 +5,7 @@ import com.novacorp.inmonode_app.features.fieldsales.application.*
 import com.novacorp.inmonode_app.features.fieldsales.domain.model.*
 import com.novacorp.inmonode_app.features.fieldsales.domain.repositories.*
 import com.novacorp.inmonode_app.features.fieldsales.presentation.reservation.ReservationWizardViewModel
+import com.novacorp.inmonode_app.features.fieldsales.presentation.reservation.money
 import com.novacorp.inmonode_app.features.fieldsales.presentation.simulation.QuickSimulationViewModel
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
@@ -101,6 +102,11 @@ class FieldPresentationTest {
    vm.bonus("b".repeat(200));assertEquals(150,vm.uiState.value.bonus.length);assertEquals(150,saved.get<String>("bonus")?.length)
    vm.viewModelScope.cancel()
   } finally { Dispatchers.resetMain() }
+ }
+ @Test fun contractAmountsShowCurrencyAndTwoDecimals() {
+  assertEquals("PEN 500.00",money("PEN",BigDecimal("500")))
+  assertEquals("PEN 42000.50",money("PEN",BigDecimal("42000.5")))
+  assertEquals("",money(null,BigDecimal.ONE));assertEquals("",money("PEN",null))
  }
  @Test fun removedLotInvalidatesDisplayedSimulation()=runTest {
   Dispatchers.setMain(StandardTestDispatcher(testScheduler))

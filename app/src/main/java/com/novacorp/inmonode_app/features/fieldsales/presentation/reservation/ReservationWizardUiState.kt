@@ -1,6 +1,7 @@
 package com.novacorp.inmonode_app.features.fieldsales.presentation.reservation
 import com.novacorp.inmonode_app.features.fieldsales.domain.model.*
 import java.math.BigDecimal
+import java.math.RoundingMode
 data class ReservationWizardUiState(val lot:Lot?=null,val project:Project?=null,val prospects:List<Prospect> = emptyList(),
  val prospectId:String?=null,val amount:String="",val discount:String="",val bonus:String="",val notes:String="",
  val reservation:Reservation?=null,val working:Boolean=false,val completed:Boolean=false,val errorMessage:String?=null) {
@@ -17,3 +18,7 @@ data class ReservationWizardUiState(val lot:Lot?=null,val project:Project?=null,
  val finalPrice:BigDecimal? get()=lot?.let { l -> terms?.takeIf { discountError==null }?.finalPrice(l.price) }
  companion object { const val INVALID_DISCOUNT="Ingresa un descuento válido." }
 }
+
+/** Amounts as the wizard and the contract show them: currency and two decimals; empty while unknown. */
+internal fun money(currency:String?,value:BigDecimal?):String=
+ if(currency==null||value==null) "" else "$currency ${value.setScale(2,RoundingMode.DOWN).toPlainString()}"
