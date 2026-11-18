@@ -53,9 +53,11 @@ android {
         release {
             // Without a configured keystore the release APK is still built, but unsigned.
             if (releaseStoreFile != null) signingConfig = signingConfigs.getByName("release")
+            // R8 stays off: partial optimization of kotlin.** crashed the release build at startup
+            // (IllegalAccessError on a repackaged kotlin.text class), and full R8 would rename the
+            // Gson DTO fields. Re-enable it only together with keep rules for the remote DTOs.
             optimization {
-                enable = true
-                packageScope = setOf("androidx.**", "kotlin.**", "kotlinx.**")
+                enable = false
             }
         }
     }
