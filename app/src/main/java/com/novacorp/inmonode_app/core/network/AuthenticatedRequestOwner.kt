@@ -16,7 +16,9 @@ class RequestOwnerInterceptor @Inject constructor(private val decoder: JwtDecode
         val expected = request.tag(AuthenticatedRequestOwner::class.java)
             ?: throw IOException("No se identificó al agente de esta operación.")
         val token = request.header("Authorization")?.takeIf { it.startsWith("Bearer ") }?.removePrefix("Bearer ")
-        val user = token?.let(decoder::decodeUser)
+        // Only the owner is checked here. Expiry is the server's call: an expired token must reach it so that the
+        // 401 lets TokenAuthenticator rotate it; rejecting it here blocked every sync an hour after login.
+        val user = token?.let(decoder::decodeIdentity)
         if (user == null || user.id != expected.userId || !user.isFieldAgent) {
             throw IOException("La sesión cambió. Los registros siguen guardados para su agente original.")
         }
