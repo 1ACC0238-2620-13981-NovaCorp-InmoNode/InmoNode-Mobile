@@ -10,6 +10,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.novacorp.inmonode_app.R
 import com.novacorp.inmonode_app.core.designsystem.components.*
+import com.novacorp.inmonode_app.features.fieldsales.domain.model.Reservation
 import com.novacorp.inmonode_app.features.fieldsales.presentation.map.components.CadastralMapCanvas
 @Composable
 fun ConflictScreen(modifier:Modifier=Modifier,viewModel:SyncQueueViewModel=hiltViewModel(),onBack:()->Unit,onResolved:()->Unit) {
@@ -24,8 +25,14 @@ fun ConflictScreen(modifier:Modifier=Modifier,viewModel:SyncQueueViewModel=hiltV
  Column(modifier.fillMaxSize().padding(16.dp),verticalArrangement=Arrangement.spacedBy(12.dp)) {
   TextButton(onClick=onBack) { Text(stringResource(R.string.field_back)) }
   Text(stringResource(R.string.sync_reassign),style=MaterialTheme.typography.titleLarge)
-  Text(s.prospects.firstOrNull { it.id==original?.prospectId }?.fullName.orEmpty(),style=MaterialTheme.typography.titleMedium)
-  Text(stringResource(R.string.sync_reassign_help),style=MaterialTheme.typography.bodySmall)
+  original?.let { row ->
+   // US-12: say which lot was lost and why, without claiming a sale the device cannot know about.
+   MessageCard(stringResource(if(row.conflictReason==Reservation.LOT_NOT_FOUND) R.string.sync_conflict_not_found else R.string.sync_conflict_unavailable,
+    s.lotLabel(row.lotId)),type=MessageType.ERROR)
+   val prospect=s.prospects.firstOrNull { it.id==row.prospectId }
+   Text(listOfNotNull(prospect?.fullName,prospect?.document).joinToString(" · "),style=MaterialTheme.typography.titleMedium)
+   Text(stringResource(R.string.sync_reassign_help,s.amountLabel(row)),style=MaterialTheme.typography.bodySmall)
+  }
   Box {
    OutlinedButton(onClick={expanded=true},modifier=Modifier.fillMaxWidth()) { Text(project?.name.orEmpty()) }
    DropdownMenu(expanded,{expanded=false}) { s.portfolio.projects.forEach { p -> DropdownMenuItem(text={Text(p.name)},onClick={projectId=p.id;selectedId=null;expanded=false}) } }
