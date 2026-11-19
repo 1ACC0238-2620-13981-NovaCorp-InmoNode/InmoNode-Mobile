@@ -141,6 +141,10 @@
     <string name="sync_background_running">Enviando registros pendientes en segundo plano…</string>
     <string name="sync_background_retry">La sincronización se pausó y se reintentará automáticamente (intento %1$d). Los registros siguen pendientes.</string>
     <string name="sync_conflicts">Resolver conflicto</string>
+    <plurals name="nav_conflicts_badge">
+        <item quantity="one">%d conflicto de lote por resolver</item>
+        <item quantity="other">%d conflictos de lote por resolver</item>
+    </plurals>
     <string name="sync_reassign">Reasignar lote</string>
     <string name="sync_reassign_help">Selecciona otro lote disponible. La separación conservará el prospecto y el comprobante.</string>
     <string name="separations_title">Separaciones</string>
