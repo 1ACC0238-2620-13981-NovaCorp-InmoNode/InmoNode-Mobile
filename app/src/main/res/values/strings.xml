@@ -137,6 +137,9 @@
     <string name="voucher_image">Imagen del voucher</string>
     <string name="sync_start">Sincronizar ahora</string>
     <string name="sync_empty">No hay registros pendientes.</string>
+    <string name="sync_background_waiting">Los registros pendientes se enviarán automáticamente al recuperar la conexión.</string>
+    <string name="sync_background_running">Enviando registros pendientes en segundo plano…</string>
+    <string name="sync_background_retry">La sincronización se pausó y se reintentará automáticamente (intento %1$d). Los registros siguen pendientes.</string>
     <string name="sync_conflicts">Resolver conflicto</string>
     <string name="sync_reassign">Reasignar lote</string>
     <string name="sync_reassign_help">Selecciona otro lote disponible. La separación conservará el prospecto y el comprobante.</string>
@@ -171,7 +174,7 @@
     <string name="voucher_flash">Cambiar flash</string>
     <string name="voucher_capture_hint">Encuadra el voucher completo dentro del marco</string>
     <string name="voucher_step">Paso 2 de 4</string>
-    <string name="prospect_saved_help">Los datos están guardados en el dispositivo. Se enviarán al sincronizar.</string>
+    <string name="prospect_saved_help">Los datos están guardados en el dispositivo y se enviarán automáticamente cuando haya conexión.</string>
     <string name="portfolio_background">Continuar en segundo plano</string>
     <string name="simulation_minimum">Inicial mínima</string>
     <string name="simulation_maximum">Plazo máximo (meses)</string>
