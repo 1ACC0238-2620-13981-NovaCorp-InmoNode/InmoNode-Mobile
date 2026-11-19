@@ -174,7 +174,7 @@
     <string name="voucher_flash">Cambiar flash</string>
     <string name="voucher_capture_hint">Encuadra el voucher completo dentro del marco</string>
     <string name="voucher_step">Paso 2 de 4</string>
-    <string name="prospect_saved_help">Los datos están guardados en el dispositivo. Se enviarán al sincronizar.</string>
+    <string name="prospect_saved_help">Los datos están guardados en el dispositivo y se enviarán automáticamente cuando haya conexión.</string>
     <string name="portfolio_background">Continuar en segundo plano</string>
     <string name="simulation_minimum">Inicial mínima</string>
     <string name="simulation_maximum">Plazo máximo (meses)</string>
