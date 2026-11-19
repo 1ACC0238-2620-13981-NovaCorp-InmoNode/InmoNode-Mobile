@@ -43,7 +43,7 @@ fun SyncQueueScreen(modifier:Modifier=Modifier,viewModel:SyncQueueViewModel=hilt
       ReservationStatus.SYNCED->R.string.reservation_synced
       else->R.string.reservation_pending }))
      row.blockedUntil?.let { Text(displayTimestamp(it),style=MaterialTheme.typography.bodySmall) }
-     if(row.status==ReservationStatus.CONFLICT&&row.conflictReason!="REASSIGNED") TextButton(onClick={onConflict(row.id)}) { Text(stringResource(R.string.sync_conflicts)) }
+     if(row.awaitsReassignment) TextButton(onClick={onConflict(row.id)}) { Text(stringResource(R.string.sync_conflicts)) }
      if(row.status==ReservationStatus.DRAFT) TextButton(onClick={onDraft(row.id)}) { Text(stringResource(R.string.field_continue)) }
     } } }
    items(s.prospects.filter { !it.synced }.sortedBy { it.registeredAt },key={"prospect-"+it.id}) { p -> OutlinedCard {
