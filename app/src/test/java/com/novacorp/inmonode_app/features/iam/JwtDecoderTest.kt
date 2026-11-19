@@ -23,6 +23,11 @@ class JwtDecoderTest {
     @Test fun expiredTokenIsNotASession() {
         assertNull(JwtDecoder().decodeUser(fixtureToken(exp = 1)))
     }
+    @Test fun expiredTokenStillIdentifiesItsAgent() {
+        assertEquals(1L, JwtDecoder().decodeIdentity(fixtureToken(exp = 1))?.id)
+        assertNull(JwtDecoder().decodeIdentity(fixtureToken(exp = 1, id = "0")))
+        assertNull(JwtDecoder().decodeIdentity(fixtureToken(exp = 1).substringBeforeLast(".")))
+    }
     @Test fun decodesBackendClaimsWithoutAndroidRuntime() {
         assertEquals(1L, JwtDecoder().decodeUser(fixtureToken())?.id)
     }
