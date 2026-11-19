@@ -1,9 +1,21 @@
 package com.novacorp.inmonode_app.features.main
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.ContextCompat
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavDestination.Companion.hasRoute
@@ -25,6 +37,7 @@ import com.novacorp.inmonode_app.features.iam.presentation.navigation.profileNav
 fun MainScreen(modifier: Modifier = Modifier, viewModel: MainViewModel = hiltViewModel()) {
     val mainNavController = rememberNavController()
     val conflicts by viewModel.unresolvedConflicts.collectAsStateWithLifecycle()
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) RequestConflictNotifications()
 
     val entry by mainNavController.currentBackStackEntryAsState()
     val bottomVisible = entry?.destination?.let { it.hasRoute<CadastralMapRoute>() || it.hasRoute<ProspectListRoute>() || it.hasRoute<SyncQueueRoute>() || it.hasRoute<ProfileRoute>() || it.hasRoute<SeparationListRoute>() } ?: true
@@ -43,6 +56,24 @@ fun MainScreen(modifier: Modifier = Modifier, viewModel: MainViewModel = hiltVie
             syncNavGraph(mainNavController)
             profileNavGraph(onPortfolio = { mainNavController.navigate(PortfolioDownloadRoute) })
             vouchersNavGraph(mainNavController)
+        }
+    }
+}
+
+/** Lot conflicts found by the background sync are announced with a notification (US-12); Android 13+ asks first. */
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
+@Composable
+private fun RequestConflictNotifications() {
+    val context = LocalContext.current
+    val request = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { }
+    var asked by rememberSaveable { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        val granted = ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) ==
+            PackageManager.PERMISSION_GRANTED
+        // Once per launch; after two refusals Android stops showing the dialog by itself.
+        if (!asked && !granted) {
+            asked = true
+            request.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
     }
 }
