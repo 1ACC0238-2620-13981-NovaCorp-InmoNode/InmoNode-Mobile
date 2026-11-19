@@ -27,8 +27,11 @@ class AuthRepositoryImpl @Inject constructor(
     @ApplicationScope private val applicationScope: CoroutineScope
 ) : AuthRepository {
 
-    override val currentUser: Flow<User?> = tokenManager.accessToken
-        .map { token -> token?.let(jwtDecoder::decodeUser)?.takeIf { it.isFieldAgent } }
+    // The access token lasts 1 h and the refresh token 30 days. An agent working offline must not be signed out
+    // when the access token expires (US-03): the session ends when the refresh token is gone, which happens on
+    // logout or when auth/refresh rejects it (TokenAuthenticator).
+    override val currentUser: Flow<User?> = tokenManager.renewableAccessToken
+        .map { token -> token?.let(jwtDecoder::decodeIdentity)?.takeIf { it.isFieldAgent } }
         .distinctUntilChanged()
 
     override suspend fun signIn(email: String, password: String): Result<User> {
