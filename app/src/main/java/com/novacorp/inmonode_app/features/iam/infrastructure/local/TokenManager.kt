@@ -29,6 +29,11 @@ class TokenManager @Inject constructor(
 
     val accessToken: Flow<String?> = preferences.map { preferences -> preferences[ACCESS_TOKEN] }
 
+    /** The stored access token, only while a refresh token can still renew it. */
+    val renewableAccessToken: Flow<String?> = preferences.map { preferences ->
+        preferences[ACCESS_TOKEN]?.takeIf { preferences[REFRESH_TOKEN] != null }
+    }
+
     suspend fun getAccessToken(): String? = accessToken.first()
 
     suspend fun getRefreshToken(): String? = preferences.first()[REFRESH_TOKEN]

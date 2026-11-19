@@ -24,6 +24,13 @@ class JwtDecoder @Inject constructor() {
 
     fun decodeUser(token: String): User? = decodeClaims(token, requireUnexpired = true)
 
+    /**
+     * The agent a stored access token belongs to, even after it expires (US-03). Offline, the session lasts as long
+     * as the refresh token; online, the server answers the expired token with 401 and TokenAuthenticator rotates it.
+     * Never use it to accept tokens just received from the server: [decodeSession] does that.
+     */
+    fun decodeIdentity(token: String): User? = decodeClaims(token, requireUnexpired = false)
+
     /** Comparison only, never authenticates an expired token or verifies its signature. */
     fun hasSameIdentity(first: String, second: String): Boolean {
         val identity = decodeClaims(first, requireUnexpired = false) ?: return false
