@@ -1,6 +1,7 @@
 package com.novacorp.inmonode_app.features.fieldsales
 
 import com.novacorp.inmonode_app.features.fieldsales.application.CancelReservationDraftUseCase
+import com.novacorp.inmonode_app.features.fieldsales.domain.model.NegotiationTerms
 import com.novacorp.inmonode_app.features.fieldsales.domain.model.Reservation
 import com.novacorp.inmonode_app.features.fieldsales.domain.repositories.ReservationRepository
 import kotlinx.coroutines.flow.Flow
@@ -48,7 +49,8 @@ class CancelReservationDraftUseCaseTest {
         val cancelled = mutableListOf<String>()
         override suspend fun cancelDraft(reservationId: String): Result<Unit> { cancelled += reservationId; return cancelResult }
         override fun observeReservations(): Flow<List<Reservation>> = error("unused")
-        override suspend fun createDraft(lotId: Long, prospectId: String, initialAmount: BigDecimal): Result<Reservation> = error("unused")
+        override suspend fun createDraft(lotId: Long, prospectId: String, initialAmount: BigDecimal,
+            terms: NegotiationTerms): Result<Reservation> = error("unused")
         override suspend fun confirmDraft(reservationId: String): Result<Reservation> = error("unused")
         override suspend fun reassign(reservationId: String, newLotId: Long): Result<Reservation> = error("unused")
     }

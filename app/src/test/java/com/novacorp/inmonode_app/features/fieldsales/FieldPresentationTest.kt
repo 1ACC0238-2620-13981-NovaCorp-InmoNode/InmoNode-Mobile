@@ -5,6 +5,7 @@ import com.novacorp.inmonode_app.features.fieldsales.application.*
 import com.novacorp.inmonode_app.features.fieldsales.domain.model.*
 import com.novacorp.inmonode_app.features.fieldsales.domain.repositories.*
 import com.novacorp.inmonode_app.features.fieldsales.presentation.reservation.ReservationWizardViewModel
+import com.novacorp.inmonode_app.features.fieldsales.presentation.reservation.money
 import com.novacorp.inmonode_app.features.fieldsales.presentation.simulation.QuickSimulationViewModel
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
@@ -32,8 +33,10 @@ class FieldPresentationTest {
   val state=MutableStateFlow<List<Reservation>>(emptyList());var calls=0
   var gate:CompletableDeferred<Unit>?=null
   override fun observeReservations():Flow<List<Reservation>> = state
-  override suspend fun createDraft(lotId:Long,prospectId:String,initialAmount:BigDecimal):Result<Reservation> {
-   calls++;gate?.await();val row=Reservation("draft",lotId,prospectId,initialAmount,"2026-10-01",ReservationStatus.DRAFT)
+  var terms:NegotiationTerms?=null
+  override suspend fun createDraft(lotId:Long,prospectId:String,initialAmount:BigDecimal,terms:NegotiationTerms):Result<Reservation> {
+   calls++;this.terms=terms;gate?.await()
+   val row=Reservation("draft",lotId,prospectId,initialAmount,"2026-10-01",ReservationStatus.DRAFT,terms=terms)
    state.value=listOf(row);return Result.success(row)
   }
   override suspend fun confirmDraft(reservationId:String):Result<Reservation> = Result.failure(IllegalStateException("Voucher pendiente"))
@@ -66,6 +69,45 @@ class FieldPresentationTest {
   try { val vm=wizard(PortfolioFake(),PeopleFake(),ReservationsFake(),SavedStateHandle(mapOf("lotId" to 1L,"amount" to "900","prospectId" to "person")))
    runCurrent();assertEquals("900",vm.uiState.value.amount);assertEquals(person,vm.uiState.value.prospect);vm.viewModelScope.cancel()
   } finally { Dispatchers.resetMain() }
+ }
+ @Test fun typedNegotiationTermsReachTheDraft()=runTest {
+  Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+  try { val rows=ReservationsFake();val vm=wizard(PortfolioFake(),PeopleFake(),rows,SavedStateHandle(mapOf("lotId" to 1L)))
+   runCurrent();vm.select(person.id);vm.amount("500");vm.discount("1500,50");vm.bonus(" Cerco perimétrico ");vm.notes("")
+   assertEquals(0,BigDecimal("8499.50").compareTo(vm.uiState.value.finalPrice));assertNull(vm.uiState.value.discountError)
+   vm.begin();runCurrent()
+   assertEquals(NegotiationTerms(BigDecimal("1500.50"),"Cerco perimétrico",null),rows.terms);vm.viewModelScope.cancel()
+  } finally { Dispatchers.resetMain() }
+ }
+ @Test fun discountOutOfRangeShowsTheValidRangeAndHidesTheFinalPrice()=runTest {
+  Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+  try { val vm=wizard(PortfolioFake(),PeopleFake(),ReservationsFake(),SavedStateHandle(mapOf("lotId" to 1L)))
+   runCurrent();vm.discount("10000")
+   assertEquals("El descuento debe estar entre PEN 0.00 y PEN 9999.99.",vm.uiState.value.discountError)
+   assertNull(vm.uiState.value.finalPrice);vm.viewModelScope.cancel()
+  } finally { Dispatchers.resetMain() }
+ }
+ @Test fun unreadableDiscountNeverCreatesADraft()=runTest {
+  Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+  try { val rows=ReservationsFake();val vm=wizard(PortfolioFake(),PeopleFake(),rows,SavedStateHandle(mapOf("lotId" to 1L)))
+   runCurrent();vm.select(person.id);vm.amount("500");vm.discount("abc");vm.begin();runCurrent()
+   assertEquals(0,rows.calls);assertEquals("Ingresa un descuento válido.",vm.uiState.value.errorMessage)
+   vm.discount("100");assertNull(vm.uiState.value.errorMessage);vm.viewModelScope.cancel()
+  } finally { Dispatchers.resetMain() }
+ }
+ @Test fun recreatedWizardRestoresNegotiationAndCapsTexts()=runTest {
+  Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+  try { val saved=SavedStateHandle(mapOf("lotId" to 1L,"discount" to "200","bonus" to "Cerco","notes" to "Pago en 2 partes"))
+   val vm=wizard(PortfolioFake(),PeopleFake(),ReservationsFake(),saved)
+   runCurrent();assertEquals(NegotiationTerms(BigDecimal("200"),"Cerco","Pago en 2 partes"),vm.uiState.value.terms)
+   vm.bonus("b".repeat(200));assertEquals(150,vm.uiState.value.bonus.length);assertEquals(150,saved.get<String>("bonus")?.length)
+   vm.viewModelScope.cancel()
+  } finally { Dispatchers.resetMain() }
+ }
+ @Test fun contractAmountsShowCurrencyAndTwoDecimals() {
+  assertEquals("PEN 500.00",money("PEN",BigDecimal("500")))
+  assertEquals("PEN 42000.50",money("PEN",BigDecimal("42000.5")))
+  assertEquals("",money(null,BigDecimal.ONE));assertEquals("",money("PEN",null))
  }
  @Test fun removedLotInvalidatesDisplayedSimulation()=runTest {
   Dispatchers.setMain(StandardTestDispatcher(testScheduler))

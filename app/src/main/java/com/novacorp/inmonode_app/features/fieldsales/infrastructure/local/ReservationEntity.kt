@@ -7,4 +7,6 @@ import androidx.room3.Index
 data class ReservationEntity(val ownerId: Long, val id: String, val lotId: Long,
     val prospectId: String, val initialAmount: String, val reservedAt: String,
     val status: String = "PENDING_SYNC", val blockedUntil: String? = null,
-    val serverStatus: String? = null, val conflictReason: String? = null)
+    val serverStatus: String? = null, val conflictReason: String? = null,
+    // US-58 negotiation terms (schema v2): the discount as a plain decimal string, like initialAmount.
+    val discountAmount: String? = null, val bonus: String? = null, val negotiationNotes: String? = null)
