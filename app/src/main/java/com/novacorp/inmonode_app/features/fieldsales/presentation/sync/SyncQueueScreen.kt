@@ -14,6 +14,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.novacorp.inmonode_app.R
 import com.novacorp.inmonode_app.core.designsystem.components.*
+import com.novacorp.inmonode_app.features.fieldsales.application.BackgroundSyncState
 import com.novacorp.inmonode_app.features.fieldsales.domain.model.ReservationStatus
 import com.novacorp.inmonode_app.features.vouchers.domain.VoucherStatus
 @Composable
@@ -24,7 +25,8 @@ fun SyncQueueScreen(modifier:Modifier=Modifier,viewModel:SyncQueueViewModel=hilt
   OfflineBanner(s.offline)
   Column(Modifier.padding(16.dp),verticalArrangement=Arrangement.spacedBy(8.dp)) {
    Text(stringResource(R.string.nav_sync),style=MaterialTheme.typography.headlineMedium,modifier=Modifier.semantics { heading();contentDescription=queueDescription })
-   if(s.working) LinearProgressIndicator(modifier=Modifier.fillMaxWidth())
+   if(s.syncing) LinearProgressIndicator(modifier=Modifier.fillMaxWidth())
+   BackgroundSyncStatus(s)
    s.message?.let { Text(it) };FieldError(s.errorMessage)
   }
   val rows=s.reservations.filter { it.status!=ReservationStatus.CANCELLED }.sortedBy { it.reservedAt }
@@ -50,6 +52,19 @@ fun SyncQueueScreen(modifier:Modifier=Modifier,viewModel:SyncQueueViewModel=hilt
     Column(Modifier.padding(16.dp)) { Text(stringResource(R.string.wizard_voucher),style=MaterialTheme.typography.titleMedium)
      StatusChip(v.status.name);FieldError(v.errorMessage) } } }
   }
-  Box(Modifier.padding(16.dp)) { PrimaryButton(stringResource(R.string.sync_start),!s.working&&!s.offline,viewModel::synchronize) }
+  Box(Modifier.padding(16.dp)) { PrimaryButton(stringResource(R.string.sync_start),!s.syncing&&!s.offline,viewModel::synchronize) }
  }
+}
+
+/** What the automatic sync of US-11 is doing, so the agent knows pending records will leave by themselves. */
+@Composable
+private fun BackgroundSyncStatus(s:SyncQueueUiState) {
+ if(!s.hasPending||s.working)return
+ val text=when(val b=s.background) {
+  BackgroundSyncState.Idle->return
+  BackgroundSyncState.Running->stringResource(R.string.sync_background_running)
+  is BackgroundSyncState.RetryScheduled->stringResource(R.string.sync_background_retry,b.attempts)
+  BackgroundSyncState.WaitingForNetwork->stringResource(R.string.sync_background_waiting)
+ }
+ Text(text,style=MaterialTheme.typography.bodyMedium)
 }

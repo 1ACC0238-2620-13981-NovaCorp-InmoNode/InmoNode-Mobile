@@ -137,6 +137,9 @@
     <string name="voucher_image">Imagen del voucher</string>
     <string name="sync_start">Sincronizar ahora</string>
     <string name="sync_empty">No hay registros pendientes.</string>
+    <string name="sync_background_waiting">Los registros pendientes se enviarán automáticamente al recuperar la conexión.</string>
+    <string name="sync_background_running">Enviando registros pendientes en segundo plano…</string>
+    <string name="sync_background_retry">La sincronización se pausó y se reintentará automáticamente (intento %1$d). Los registros siguen pendientes.</string>
     <string name="sync_conflicts">Resolver conflicto</string>
     <string name="sync_reassign">Reasignar lote</string>
     <string name="sync_reassign_help">Selecciona otro lote disponible. La separación conservará el prospecto y el comprobante.</string>
