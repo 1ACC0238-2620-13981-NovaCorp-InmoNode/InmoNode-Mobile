@@ -23,11 +23,12 @@ class ReservationWizardViewModel @Inject constructor(portfolio:PortfolioReposito
    val project=p.projects.firstOrNull { pr -> pr.lots.any { it.id==lotId } }
    _uiState.update { it.copy(project=project,lot=project?.lots?.firstOrNull { l -> l.id==lotId },prospects=people,reservation=reservation) }
   } } }
- fun select(id:String) { saved["prospectId"]=id;_uiState.update { it.copy(prospectId=id) } }
- fun amount(v:String) { saved["amount"]=v;_uiState.update { it.copy(amount=v) } }
- fun discount(v:String) { saved["discount"]=v;_uiState.update { it.copy(discount=v) } }
- fun bonus(v:String) { val text=v.take(NegotiationTerms.MAX_BONUS_LENGTH);saved["bonus"]=text;_uiState.update { it.copy(bonus=text) } }
- fun notes(v:String) { val text=v.take(NegotiationTerms.MAX_NOTES_LENGTH);saved["notes"]=text;_uiState.update { it.copy(notes=text) } }
+ // Editing a step-1 field clears the previous attempt's error, which may no longer apply.
+ fun select(id:String) { saved["prospectId"]=id;_uiState.update { it.copy(prospectId=id,errorMessage=null) } }
+ fun amount(v:String) { saved["amount"]=v;_uiState.update { it.copy(amount=v,errorMessage=null) } }
+ fun discount(v:String) { saved["discount"]=v;_uiState.update { it.copy(discount=v,errorMessage=null) } }
+ fun bonus(v:String) { val text=v.take(NegotiationTerms.MAX_BONUS_LENGTH);saved["bonus"]=text;_uiState.update { it.copy(bonus=text,errorMessage=null) } }
+ fun notes(v:String) { val text=v.take(NegotiationTerms.MAX_NOTES_LENGTH);saved["notes"]=text;_uiState.update { it.copy(notes=text,errorMessage=null) } }
  fun begin() { if(_uiState.value.working)return;val s=_uiState.value
   val lot=s.lot;val person=s.prospectId;val amount=s.amount.replace(',','.').toBigDecimalOrNull()
   if(lot==null||person==null||amount==null) { _uiState.update { it.copy(errorMessage="Selecciona un prospecto e ingresa un monto válido.") };return }

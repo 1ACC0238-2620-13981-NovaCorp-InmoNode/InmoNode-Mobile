@@ -91,7 +91,8 @@ class FieldPresentationTest {
   Dispatchers.setMain(StandardTestDispatcher(testScheduler))
   try { val rows=ReservationsFake();val vm=wizard(PortfolioFake(),PeopleFake(),rows,SavedStateHandle(mapOf("lotId" to 1L)))
    runCurrent();vm.select(person.id);vm.amount("500");vm.discount("abc");vm.begin();runCurrent()
-   assertEquals(0,rows.calls);assertEquals("Ingresa un descuento válido.",vm.uiState.value.errorMessage);vm.viewModelScope.cancel()
+   assertEquals(0,rows.calls);assertEquals("Ingresa un descuento válido.",vm.uiState.value.errorMessage)
+   vm.discount("100");assertNull(vm.uiState.value.errorMessage);vm.viewModelScope.cancel()
   } finally { Dispatchers.resetMain() }
  }
  @Test fun recreatedWizardRestoresNegotiationAndCapsTexts()=runTest {
