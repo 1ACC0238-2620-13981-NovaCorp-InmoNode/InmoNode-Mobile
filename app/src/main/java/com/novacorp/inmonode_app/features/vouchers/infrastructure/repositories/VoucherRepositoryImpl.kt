@@ -105,11 +105,9 @@ class VoucherRepositoryImpl @Inject constructor(
             // The agent edits fields, never the confidence reported by the recognition engine.
             val normalized = data.copy(currency = data.currency?.trim()?.uppercase(),
                 operationCode = data.operationCode?.trim(), confidence = row.ocrData().confidence)
+            require(OcrFieldError.AMOUNT_DECIMALS !in normalized.fieldErrors()) { "El monto debe tener como máximo dos decimales." }
             require(normalized.isValid()) { "Completa monto, moneda, fecha válida y número de operación antes de confirmar." }
-            require(normalized.amount!!.stripTrailingZeros().scale() <= 2) { "El monto debe tener como máximo dos decimales." }
-            val original = row.ocrData()
-            val corrected = original.amount?.compareTo(normalized.amount) != 0 || original.currency != normalized.currency ||
-                original.operationDate != normalized.operationDate || original.operationCode != normalized.operationCode
+            val corrected = normalized.differsFrom(row.ocrData())
             val updated = row.copy(dataJson = voucherGson.toJson(normalized), status = "READY_TO_SYNC",
                 manuallyCorrected = row.manuallyCorrected || corrected, errorMessage = null)
             dao.upsert(updated)

@@ -133,6 +133,13 @@
     <string name="voucher_currency">Moneda (PEN, USD…)</string>
     <string name="voucher_amount">Monto del comprobante</string>
     <string name="voucher_process">Procesar imagen</string>
+    <string name="voucher_error_amount">Escribe un monto mayor a cero, sin separador de miles; por ejemplo 1500.00.</string>
+    <string name="voucher_error_amount_decimals">Usa como máximo dos decimales.</string>
+    <string name="voucher_error_currency">Usa el código de 3 letras de la moneda, como PEN o USD.</string>
+    <string name="voucher_error_date_format">Usa el formato AAAA-MM-DD; por ejemplo 2026-01-31.</string>
+    <string name="voucher_error_date_future">La fecha de operación no puede ser posterior a hoy.</string>
+    <string name="voucher_error_code_missing">Escribe el código de operación que figura en el voucher.</string>
+    <string name="voucher_error_code_long">Usa como máximo 50 caracteres.</string>
     <string name="voucher_review_hint">Revisa y corrige los datos antes de continuar.</string>
     <string name="voucher_image">Imagen del voucher</string>
     <string name="sync_start">Sincronizar ahora</string>
