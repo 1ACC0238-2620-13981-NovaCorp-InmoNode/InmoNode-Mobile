@@ -1,0 +1,28 @@
+version: 1
+# CONTRATO PRELIMINAR DE SEPARACIÓN DE LOTE
+
+## PARTES
+De una parte, la empresa desarrolladora del proyecto {{project.name}}, en adelante LA EMPRESA, representada en esta separación por su agente comercial de campo. De la otra parte, {{buyer.name}}, con documento de identidad {{buyer.document}} y estado civil {{buyer.maritalStatus}}, en adelante EL CLIENTE.
+
+## PRIMERA: OBJETO
+EL CLIENTE separa el lote {{lot.code}} del proyecto {{project.name}}, ubicado en {{project.location}}, con un área de {{lot.area}} m², con la intención de comprarlo.
+
+## SEGUNDA: PRECIO
+El precio de lista del lote es {{price.list}}. Descuento autorizado: {{terms.discount}}. El precio final pactado es {{price.final}}.
+
+Beneficios adicionales acordados: {{terms.bonus}}.
+
+## TERCERA: MONTO DE SEPARACIÓN
+EL CLIENTE entrega {{reservation.amount}} como monto de separación, respaldado por el comprobante de pago registrado en esta operación el {{reservation.date}}.
+
+## CUARTA: VERIFICACIÓN DEL PAGO
+Cuando la separación llega a LA EMPRESA, el lote queda bloqueado durante 24 horas mientras el área de finanzas verifica el comprobante. Si el comprobante es observado, EL CLIENTE puede presentar uno nuevo. Si el lote ya había sido tomado por otra operación, la separación no surte efecto sobre él y el agente comercial puede proponer a EL CLIENTE otro lote disponible, conservando el monto de separación.
+
+## QUINTA: FINANCIAMIENTO
+El saldo puede financiarse según las reglas comerciales vigentes del proyecto: un pago inicial mínimo del {{rules.minDownPayment}} % del precio, una tasa de interés anual de {{rules.annualRate}} % y un plazo máximo de {{rules.maxTermMonths}} meses. El monto de las cuotas y el cronograma se fijan en el contrato oficial.
+
+## SEXTA: CONDICIONES ADICIONALES
+{{terms.notes}}
+
+## SÉPTIMA: NATURALEZA DE ESTE DOCUMENTO
+Este documento es una vista preliminar generada en el dispositivo del agente comercial para que EL CLIENTE revise sus datos, el lote y los montos. No es el contrato de compraventa ni tiene valor legal. El contrato oficial lo emite LA EMPRESA después de verificar el comprobante de pago, y EL CLIENTE puede revisarlo en el portal de compradores.
