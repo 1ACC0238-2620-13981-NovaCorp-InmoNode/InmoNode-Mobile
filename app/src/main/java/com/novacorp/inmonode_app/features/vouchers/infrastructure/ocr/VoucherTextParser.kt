@@ -8,6 +8,14 @@ import java.time.format.ResolverStyle
 
 /** Only labelled amounts/codes are extracted; missing or ambiguous data stays for manual review. */
 internal object VoucherTextParser {
+    /**
+     * A label at the start of a row ("Operación", "N° de operación", "Nro. de operación", "Código de operación")
+     * and, on the same row, a code with at least one digit, so a heading such as "Operación exitosa" is no code.
+     */
+    private val CODE = Regex("(?:^|\\n)[ \\t]*(?:(?:n[uú]mero|nro\\.?|n[°ºo.]?)[ \\t]*(?:de[ \\t]*)?)?" +
+        "(?:operaci[oó]n|operation|c[oó]digo de operaci[oó]n)[ \\t]*[:#.-]?[ \\t]*" +
+        "((?=[A-Za-z0-9-]*[0-9])[A-Za-z0-9-]{3,50})(?![A-Za-z0-9-])", RegexOption.IGNORE_CASE)
+
     fun parse(text: String, confidence: BigDecimal?): OcrData {
         val amounts = Regex("(?:monto|importe|total|amount)\\s*:?\\s*(S/[.]?|PEN|USD|US\\$|\\$)?\\s*([0-9][0-9.,]*)", RegexOption.IGNORE_CASE)
             .findAll(text).toList()
@@ -31,8 +39,7 @@ internal object VoucherTextParser {
                 runCatching { LocalDate.parse(value, DateTimeFormatter.ofPattern(pattern).withResolverStyle(ResolverStyle.STRICT)).toString() }.getOrNull()
             }
         }
-        val code = Regex("(?:^|\\n)\\s*(?:(?:n[uú]mero|n[°ºo.]?)\\s*(?:de\\s*)?)?(?:operaci[oó]n|operation|c[oó]digo de operaci[oó]n)\\s*[:#.-]?\\s*([A-Za-z0-9-]{3,50})", RegexOption.IGNORE_CASE)
-            .find(text)?.groupValues?.get(1)
+        val code = CODE.find(text)?.groupValues?.get(1)
         return OcrData(amount, currency, date, code, confidence)
     }
 

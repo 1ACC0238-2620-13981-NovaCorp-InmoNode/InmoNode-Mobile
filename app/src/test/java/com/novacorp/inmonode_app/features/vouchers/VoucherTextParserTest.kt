@@ -52,4 +52,18 @@ class VoucherTextParserTest {
         assertNull(result.amount)
         assertFalse(result.isValid(LocalDate.of(2026, 10, 9)))
     }
+
+    @Test fun aHeadingIsNoOperationCodeAndShortLabelsAreRead() {
+        assertEquals("00123456", VoucherTextParser.parse("Operación exitosa\nNúmero de operación  00123456", null).operationCode)
+        assertEquals("03817425", VoucherTextParser.parse("Nro. de operación  03817425", null).operationCode)
+        assertEquals("004512", VoucherTextParser.parse("NRO OPERACION: 004512", null).operationCode)
+        assertEquals("55120983", VoucherTextParser.parse("N° de operación: 55120983", null).operationCode)
+        assertEquals("PL-88213", VoucherTextParser.parse("Código de operación  PL-88213", null).operationCode)
+    }
+
+    @Test fun anOperationCodeNeedsADigitOnTheRowOfItsLabel() {
+        assertNull(VoucherTextParser.parse("Operación exitosa\nBuscar", null).operationCode)
+        assertNull(VoucherTextParser.parse("Nro. de operación\nO Buscar\n03817425", null).operationCode)
+        assertNull(VoucherTextParser.parse("Fecha de operación: 2026-11-17", null).operationCode)
+    }
 }
