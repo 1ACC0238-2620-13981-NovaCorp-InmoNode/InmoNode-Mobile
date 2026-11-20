@@ -24,6 +24,7 @@ class LotDetailSheetTest {
     @Test fun anIrregularLotShowsItsAreaWithoutFrontOrDepth() {
         show(LotDimensions(null, null, BigDecimal("205")))
 
+        compose.onNodeWithText("Disponible").assertIsDisplayed()
         compose.onNodeWithText("205 m²").assertIsDisplayed()
         compose.onNodeWithText("Frente").assertDoesNotExist()
         compose.onNodeWithText("Fondo").assertDoesNotExist()

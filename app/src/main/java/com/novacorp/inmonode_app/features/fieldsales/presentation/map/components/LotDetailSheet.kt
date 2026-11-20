@@ -14,7 +14,7 @@ fun LotDetailSheet(lot: Lot, onDismiss: () -> Unit, onSimulate: () -> Unit, onRe
     ModalBottomSheet(onDismissRequest=onDismiss) {
         Column(Modifier.padding(16.dp), verticalArrangement=Arrangement.spacedBy(16.dp)) {
             Text(lot.code,style=MaterialTheme.typography.headlineMedium)
-            Text(if(lot.isAvailable()) stringResource(R.string.map_available) else stringResource(R.string.lot_unavailable))
+            Text(if(lot.isAvailable()) stringResource(R.string.map_legend_available) else stringResource(R.string.lot_unavailable))
             FieldValue(stringResource(R.string.lot_area), "${lot.dimensions.area} m²")
             // An irregular lot has no single front or depth: only what the plan gives is shown.
             lot.dimensions.front?.let { FieldValue(stringResource(R.string.lot_front), "$it m") }
