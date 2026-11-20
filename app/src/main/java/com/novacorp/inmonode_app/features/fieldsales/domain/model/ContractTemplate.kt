@@ -23,7 +23,8 @@ data class ContractTemplate(val version: String, val title: String, val sections
     }
 
     companion object {
-        private val PLACEHOLDER = Regex("""\{\{\s*([A-Za-z.]+)\s*}}""")
+        // Android's ICU engine rejects an unescaped "}", which the JVM accepts.
+        private val PLACEHOLDER = Regex("""\{\{\s*([A-Za-z.]+)\s*\}\}""")
 
         fun parse(text: String): ContractTemplate {
             val lines = text.lines()
