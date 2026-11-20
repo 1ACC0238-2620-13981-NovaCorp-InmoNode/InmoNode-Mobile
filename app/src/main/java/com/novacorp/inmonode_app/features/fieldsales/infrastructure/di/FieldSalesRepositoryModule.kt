@@ -20,4 +20,5 @@ interface FieldSalesRepositoryModule {
     @Binds @Singleton fun sync(impl: FieldSyncRepositoryImpl): FieldSyncRepository
     @Binds @Singleton fun backgroundSync(impl: WorkManagerBackgroundSync): BackgroundSync
     @Binds @Singleton fun conflictAlerts(impl: NotificationConflictAlerts): ConflictAlerts
+    @Binds @Singleton fun contracts(impl: ContractDocumentRepositoryImpl): ContractDocumentRepository
 }
