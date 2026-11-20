@@ -61,6 +61,22 @@ class VoucherTextParserTest {
         assertEquals("PL-88213", VoucherTextParser.parse("Código de operación  PL-88213", null).operationCode)
     }
 
+    @Test fun transferLabelsAndAThousandsGroupSplitByTheOcrAreRead() {
+        assertEquals(BigDecimal("1250.50"), VoucherTextParser.parse("Monto transferido  S/ 1,250.50", null).amount)
+        assertEquals(BigDecimal("3000.00"), VoucherTextParser.parse("Monto enviado  S/ 3,000.00", null).amount)
+        val ticket = VoucherTextParser.parse("IMPORTE: S/ 2, 500.00", null)
+        assertEquals(BigDecimal("2500.00"), ticket.amount)
+        assertEquals("PEN", ticket.currency)
+    }
+
+    @Test fun withoutALabelOnlyASingleAmountWithItsCurrencyIsTaken() {
+        val wallet = VoucherTextParser.parse("¡Pago exitoso!\nS/ 50\nInmobiliaria Prueba SAC", null)
+        assertEquals(BigDecimal("50"), wallet.amount)
+        assertEquals("PEN", wallet.currency)
+        assertNull(VoucherTextParser.parse("S/ 50\nComisión S/ 1.50", null).amount)
+        assertNull(VoucherTextParser.parse("Cuenta 191-0488\n15.11.2026", null).amount)
+    }
+
     @Test fun anOperationCodeNeedsADigitOnTheRowOfItsLabel() {
         assertNull(VoucherTextParser.parse("Operación exitosa\nBuscar", null).operationCode)
         assertNull(VoucherTextParser.parse("Nro. de operación\nO Buscar\n03817425", null).operationCode)
