@@ -76,7 +76,7 @@ class ReservationRepositoryImpl @Inject constructor(private val database: InmoNo
         database.atomic {
             val original = requireNotNull(dao.find(owner, reservationId)) { "No se encontró la separación." }
             check(original.status == "CONFLICT" && original.conflictReason != Reservation.REASSIGNED) { "Esta separación no tiene un conflicto pendiente." }
-            check(original.lotId != newLotId) { "Selecciona otro lote disponible." }
+            // The lost lot may be taken again once it is free (a web hold expires after 1 h); create() checks it is available.
             // A conflicting id is immutable on the backend. Reusing it would return DUPLICATE/CONFLICT forever.
             // The agreed terms belong to the buyer, so they move too; a discount the new lot cannot absorb rejects the move.
             val replacement = create(owner, newLotId, original.prospectId, original.initialAmount.toBigDecimal(),

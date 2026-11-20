@@ -143,6 +143,19 @@ class FieldPersistenceTest {
         assertEquals("BLOCKED", database.lotDao().find(1, 10)?.status)
     }
 
+    @Test fun aConflictTakesItsLotBackOnlyOnceItIsFreeAgain() = runBlocking {
+        val id = pendingReservation()
+        service.conflict = true
+        sync.synchronize().getOrThrow()
+        assertTrue(reservations.reassign(id, 10).isFailure)
+        // A later portfolio download shows the lot free again, for example after a buyer's web hold expired.
+        database.lotDao().upsert(listOf(database.lotDao().find(1, 10)!!.copy(status = "AVAILABLE")))
+        val replacement = reservations.reassign(id, 10).getOrThrow()
+        assertNotEquals(id, replacement.id)
+        assertEquals(10L, replacement.lotId)
+        assertEquals("REASSIGNED", database.reservationDao().find(1, id)?.conflictReason)
+    }
+
     @Test fun negotiationTermsArePersistedAndCarriedByReassignment() = runBlocking {
         portfolio.download().getOrThrow()
         val prospect = prospects.register("12345678", "Ana Pérez", "", "Soltera").getOrThrow()
