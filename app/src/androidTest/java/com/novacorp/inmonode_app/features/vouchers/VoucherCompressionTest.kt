@@ -6,12 +6,17 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Typeface
+import android.net.Uri
 import android.util.Log
 import androidx.test.platform.app.InstrumentationRegistry
+import com.google.mlkit.vision.common.InputImage
+import com.google.mlkit.vision.text.TextRecognition
+import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import com.novacorp.inmonode_app.features.vouchers.domain.OcrData
 import com.novacorp.inmonode_app.features.vouchers.infrastructure.image.ImageCompressor
 import com.novacorp.inmonode_app.features.vouchers.infrastructure.ocr.MlKitOcrEngine
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.tasks.await
 import org.junit.After
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
@@ -73,10 +78,31 @@ class VoucherCompressionTest {
             val upload = compressor.compress(photo, File(dir, "${photo.nameWithoutExtension}-upload.jpg"))
             val before = ocr.recognize(photo.path).getOrThrow()
             val after = ocr.recognize(upload.path).getOrThrow()
+            // Legibility: how much of the text read on the original is still read on the upload.
+            val originalText = text(photo)
+            val uploadText = text(upload)
+            File(samples, "${photo.nameWithoutExtension}.txt").writeText(uploadText)
             Log.i(TAG, "${photo.name}|${size(photo)}|${photo.length()}|${size(upload)}|${upload.length()}|" +
-                "${before.data}|${after.data}|${after.requiresRecapture}")
+                "${similarity(originalText, uploadText)}|${before.data}|${after.data}|${after.requiresRecapture}")
             assertTrue("${photo.name} is ${upload.length()} bytes", upload.length() < ImageCompressor.MAX_BYTES)
         }
+    }
+
+    private suspend fun text(file: File): String {
+        val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
+        return try { recognizer.process(InputImage.fromFilePath(context, Uri.fromFile(file))).await().text } finally { recognizer.close() }
+    }
+
+    /** 1 minus the edit distance over the longer text: 1.0 means the same characters were read. */
+    private fun similarity(a: String, b: String): String {
+        if (a.isEmpty() && b.isEmpty()) return "1.000"
+        var previous = IntArray(b.length + 1) { it }
+        for (i in 1..a.length) {
+            val current = IntArray(b.length + 1).also { it[0] = i }
+            for (j in 1..b.length) current[j] = minOf(previous[j] + 1, current[j - 1] + 1, previous[j - 1] + if (a[i - 1] == b[j - 1]) 0 else 1)
+            previous = current
+        }
+        return "%.3f".format(java.util.Locale.ROOT, 1.0 - previous[b.length].toDouble() / maxOf(a.length, b.length))
     }
 
     private fun bounds(file: File) = BitmapFactory.Options().apply { inJustDecodeBounds = true }
