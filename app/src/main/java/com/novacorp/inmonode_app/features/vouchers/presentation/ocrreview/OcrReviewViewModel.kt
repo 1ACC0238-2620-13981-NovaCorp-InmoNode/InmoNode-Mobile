@@ -19,7 +19,7 @@ class OcrReviewViewModel @Inject constructor(repository:VoucherRepository,privat
     if(row.status==VoucherStatus.PENDING_OCR) process() else load(row)
    }
   } } }
- private fun load(row:Voucher) { _uiState.update { it.copy(voucher=row,amount=saved["amount"]?:row.data.amount?.toPlainString().orEmpty(),
+ private fun load(row:Voucher) { _uiState.update { it.copy(voucher=row,checked=it.checked||row.status==VoucherStatus.MANUAL_REVIEW_NEEDED,amount=saved["amount"]?:row.data.amount?.toPlainString().orEmpty(),
   currency=saved["currency"]?:row.data.currency.orEmpty(),date=saved["date"]?:row.data.operationDate.orEmpty(),code=saved["code"]?:row.data.operationCode.orEmpty()) } }
  fun amount(v:String) { saved["amount"]=v;_uiState.update { it.copy(amount=v) } }
  fun currency(v:String) { saved["currency"]=v;_uiState.update { it.copy(currency=v.uppercase()) } }
@@ -30,7 +30,8 @@ class OcrReviewViewModel @Inject constructor(repository:VoucherRepository,privat
    process(id).fold({ row -> load(row);_uiState.update { it.copy(working=false) } },
     { e -> _uiState.update { it.copy(working=false,errorMessage=e.message) } }) } }
  fun save() { val s=_uiState.value;val row=s.voucher?:return;if(s.working)return
-  val data=row.data.copy(amount=s.amount.replace(',','.').toBigDecimalOrNull(),currency=s.currency.trim().uppercase(),operationDate=s.date.trim(),operationCode=s.code.trim())
+  val data=s.typed(row.data)
+  if(data.fieldErrors().isNotEmpty()) { _uiState.update { it.copy(checked=true) };return }
   viewModelScope.launch { _uiState.update { it.copy(working=true,errorMessage=null) }
    review(row.id,data).fold({ v -> _uiState.update { it.copy(voucher=v,working=false,completed=true) } },
     { e -> _uiState.update { it.copy(working=false,errorMessage=e.message) } }) } }
