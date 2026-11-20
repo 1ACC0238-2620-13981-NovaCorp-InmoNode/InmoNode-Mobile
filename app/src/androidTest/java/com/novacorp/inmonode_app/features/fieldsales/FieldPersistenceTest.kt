@@ -114,7 +114,8 @@ class FieldPersistenceTest {
                 lot.copy(geometry = lot.geometry.copy(coordinates = emptyList()))
             }))
         })
-        assertTrue(portfolio.download().isFailure)
+        val failure = portfolio.download().exceptionOrNull()
+        assertEquals("the agent reads why, not the exception", UnusablePortfolioException.MESSAGE, failure?.message)
         assertEquals(stable.projects, portfolio.observePortfolio().first().projects)
     }
 
