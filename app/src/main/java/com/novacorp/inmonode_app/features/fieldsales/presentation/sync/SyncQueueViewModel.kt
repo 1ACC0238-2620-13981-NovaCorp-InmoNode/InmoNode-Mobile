@@ -25,8 +25,8 @@ class SyncQueueViewModel @Inject constructor(reservations:ReservationRepository,
  }
  fun synchronize() { val s=_uiState.value
   if(s.syncing||s.offline||saved.get<String>("reservationId")!=null)return
-  viewModelScope.launch { _uiState.update { it.copy(working=true,errorMessage=null,message=null) }
-   sync().fold({ summary -> _uiState.update { it.copy(working=false,message="${summary.prospectsSynced} prospectos y ${summary.reservationsSynced} separaciones enviados · ${summary.conflicts} conflictos") } },
+  viewModelScope.launch { _uiState.update { it.copy(working=true,errorMessage=null,result=null) }
+   sync().fold({ summary -> _uiState.update { it.copy(working=false,result=summary) } },
     { e -> _uiState.update { it.copy(working=false,errorMessage=e.message) }
       if(isRetryableSyncFailure(e)) background.schedule()
     }) }

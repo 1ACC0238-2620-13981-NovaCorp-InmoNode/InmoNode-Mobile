@@ -6,7 +6,7 @@ import com.novacorp.inmonode_app.features.vouchers.domain.Voucher
 import com.novacorp.inmonode_app.features.vouchers.domain.VoucherStatus
 data class SyncQueueUiState(val reservations:List<Reservation> = emptyList(),val prospects:List<Prospect> = emptyList(),
  val vouchers:List<Voucher> = emptyList(),val portfolio:Portfolio=Portfolio(emptyList(),null,null),val offline:Boolean=true,
- val working:Boolean=false,val message:String?=null,val errorMessage:String?=null,val replacementId:String?=null,val conflictId:String?=null,
+ val working:Boolean=false,val result:SyncSummary?=null,val errorMessage:String?=null,val replacementId:String?=null,val conflictId:String?=null,
  val background:BackgroundSyncState=BackgroundSyncState.Idle) {
  fun lot(id:Long)=portfolio.projects.flatMap { it.lots }.firstOrNull { it.id==id }
  /** A lot missing from the catalog (LOT_NOT_FOUND) is named by its id. */

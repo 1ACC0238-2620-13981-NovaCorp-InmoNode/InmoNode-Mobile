@@ -8,6 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -16,6 +17,7 @@ import com.novacorp.inmonode_app.R
 import com.novacorp.inmonode_app.core.designsystem.components.*
 import com.novacorp.inmonode_app.features.fieldsales.application.BackgroundSyncState
 import com.novacorp.inmonode_app.features.fieldsales.domain.model.ReservationStatus
+import com.novacorp.inmonode_app.features.fieldsales.domain.model.SyncSummary
 import com.novacorp.inmonode_app.features.vouchers.domain.VoucherStatus
 @Composable
 fun SyncQueueScreen(modifier:Modifier=Modifier,viewModel:SyncQueueViewModel=hiltViewModel(),onConflict:(String)->Unit,onDraft:(String)->Unit) {
@@ -27,7 +29,7 @@ fun SyncQueueScreen(modifier:Modifier=Modifier,viewModel:SyncQueueViewModel=hilt
    Text(stringResource(R.string.nav_sync),style=MaterialTheme.typography.headlineMedium,modifier=Modifier.semantics { heading();contentDescription=queueDescription })
    if(s.syncing) LinearProgressIndicator(modifier=Modifier.fillMaxWidth())
    BackgroundSyncStatus(s)
-   s.message?.let { Text(it) };FieldError(s.errorMessage)
+   s.result?.let { Text(syncResultText(it)) };FieldError(s.errorMessage)
   }
   val rows=s.reservations.filter { it.status!=ReservationStatus.CANCELLED }.sortedBy { it.reservedAt }
   LazyColumn(Modifier.weight(1f),contentPadding=PaddingValues(16.dp),verticalArrangement=Arrangement.spacedBy(8.dp)) {
@@ -42,7 +44,7 @@ fun SyncQueueScreen(modifier:Modifier=Modifier,viewModel:SyncQueueViewModel=hilt
       ReservationStatus.CONFLICT->R.string.reservation_conflict
       ReservationStatus.SYNCED->R.string.reservation_synced
       else->R.string.reservation_pending }))
-     row.blockedUntil?.let { Text(stringResource(R.string.sync_lot_held_until,displayTimestamp(it)),style=MaterialTheme.typography.bodySmall) }
+     row.blockedUntil?.let { Text(stringResource(R.string.lot_held_until,displayTimestamp(it)),style=MaterialTheme.typography.bodySmall) }
      if(row.awaitsReassignment) TextButton(onClick={onConflict(row.id)}) { Text(stringResource(R.string.sync_conflicts)) }
      if(row.status==ReservationStatus.DRAFT) TextButton(onClick={onDraft(row.id)}) { Text(stringResource(R.string.field_continue)) }
     } } }
@@ -70,4 +72,21 @@ private fun BackgroundSyncStatus(s:SyncQueueUiState) {
   BackgroundSyncState.WaitingForNetwork->stringResource(R.string.sync_background_waiting)
  }
  Text(text,style=MaterialTheme.typography.bodyMedium)
+}
+
+/**
+ * What "Sincronizar ahora" sent, vouchers included. When the automatic sync had already sent everything, it says so
+ * instead of reporting zero records sent.
+ */
+@Composable
+private fun syncResultText(r:SyncSummary):String {
+ if(r.sentNothing) return stringResource(R.string.sync_result_nothing)
+ val sent=listOfNotNull(
+  r.prospectsSynced.takeIf { it>0 }?.let { pluralStringResource(R.plurals.sync_result_prospects,it,it) },
+  r.reservationsSynced.takeIf { it>0 }?.let { pluralStringResource(R.plurals.sync_result_reservations,it,it) },
+  r.vouchersUploaded.takeIf { it>0 }?.let { pluralStringResource(R.plurals.sync_result_vouchers,it,it) })
+ val and=stringResource(R.string.sync_result_and)
+ val list=if(sent.size<2) sent.joinToString() else sent.dropLast(1).joinToString(", ")+" $and "+sent.last()
+ return listOfNotNull(list.takeIf { it.isNotEmpty() }?.let { stringResource(R.string.sync_result_sent,it) },
+  r.conflicts.takeIf { it>0 }?.let { pluralStringResource(R.plurals.sync_result_conflicts,it,it) }).joinToString(" ")
 }

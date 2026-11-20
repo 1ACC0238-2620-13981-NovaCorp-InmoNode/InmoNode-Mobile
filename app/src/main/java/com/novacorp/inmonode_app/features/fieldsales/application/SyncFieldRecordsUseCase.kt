@@ -35,7 +35,7 @@ class SyncFieldRecordsUseCase @Inject constructor(private val fields: FieldSyncR
             if (auth.currentUser.first()?.id != owner) return@withLock sessionChanged()
             vouchers.upload(voucher.id).getOrElse { return@withLock Result.failure(it) }
         }
-        Result.success(summary)
+        Result.success(summary.copy(vouchersUploaded = pending.size))
     }
 
     private fun sessionChanged(): Result<SyncSummary> =

@@ -35,7 +35,7 @@ fun SeparationDetailScreen(modifier:Modifier=Modifier,viewModel:SeparationsViewM
     remaining?.let { seconds ->
      Text("%02d:%02d:%02d".format(seconds/3600,(seconds%3600)/60,seconds%60),style=MaterialTheme.typography.headlineMedium)
     }
-    Text(displayTimestamp(until))
+    Text(stringResource(R.string.lot_held_until,displayTimestamp(until)))
    }
    Text(stringResource(R.string.separation_registered),style=MaterialTheme.typography.titleMedium)
    Text(displayTimestamp(row.reservedAt),style=MaterialTheme.typography.bodySmall)
