@@ -55,11 +55,7 @@ fun CadastralMapScreen(modifier: Modifier=Modifier, viewModel: CadastralMapViewM
                     Text(stringResource(R.string.map_center)) }
             }
         }
-        Row(Modifier.padding(16.dp),horizontalArrangement=Arrangement.spacedBy(16.dp)) {
-            Text(stringResource(R.string.map_available),style=MaterialTheme.typography.bodySmall)
-            Text(stringResource(R.string.map_reserved),style=MaterialTheme.typography.bodySmall)
-            Text(stringResource(R.string.map_sold),style=MaterialTheme.typography.bodySmall)
-        }
+        LotLegend(Modifier.padding(16.dp))
     }
     state.selectedLot?.let { lot ->
         if(lot.isAvailable()) LotDetailSheet(lot,{viewModel.select(null)},
