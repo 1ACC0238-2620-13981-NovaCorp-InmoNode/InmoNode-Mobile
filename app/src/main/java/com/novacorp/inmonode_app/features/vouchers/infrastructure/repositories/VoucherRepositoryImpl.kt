@@ -111,6 +111,8 @@ class VoucherRepositoryImpl @Inject constructor(
             val updated = row.copy(dataJson = voucherGson.toJson(normalized), status = "READY_TO_SYNC",
                 manuallyCorrected = row.manuallyCorrected || corrected, errorMessage = null)
             dao.upsert(updated)
+            // A legible replacement supersedes the illegible captures of its separation: they could never be sent.
+            deleteWithFiles(owner, dao.illegibleForReservation(owner, row.reservationId))
             updated.toDomain()
         }
     }
@@ -184,13 +186,16 @@ class VoucherRepositoryImpl @Inject constructor(
     override suspend fun discardCancelled(): Result<Unit> = operationResult {
         mutationMutex.withLock {
             val owner = session.requireOwner()
-            val rows = dao.ofCancelledReservations(owner)
-            if (rows.isEmpty()) return@withLock
-            dao.delete(owner, rows.map { it.id })
-            // Files go only after their rows, so a failed delete never leaves a row pointing at a missing image.
-            withContext(kotlinx.coroutines.NonCancellable + Dispatchers.IO) {
-                rows.forEach { row -> File(row.imagePath).delete(); row.uploadPath?.let { File(it).delete() } }
-            }
+            deleteWithFiles(owner, dao.ofCancelledReservations(owner))
+        }
+    }
+
+    private suspend fun deleteWithFiles(owner: Long, rows: List<VoucherEntity>) {
+        if (rows.isEmpty()) return
+        dao.delete(owner, rows.map { it.id })
+        // Files go only after their rows, so a failed delete never leaves a row pointing at a missing image.
+        withContext(kotlinx.coroutines.NonCancellable + Dispatchers.IO) {
+            rows.forEach { row -> File(row.imagePath).delete(); row.uploadPath?.let { File(it).delete() } }
         }
     }
 
