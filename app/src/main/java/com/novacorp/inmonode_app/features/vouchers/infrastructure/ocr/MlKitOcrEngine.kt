@@ -25,7 +25,12 @@ class MlKitOcrEngine @Inject constructor(@ApplicationContext private val context
             val scores = reading.textBlocks.flatMap { it.lines }.flatMap { it.elements }
                 .map { it.confidence.toDouble() }.filter { it.isFinite() && it in 0.0..1.0 }
             val confidence = scores.takeIf { it.isNotEmpty() }?.average()?.let(BigDecimal::valueOf)
-            OcrReading(VoucherTextParser.parse(reading.text, confidence), reading.text.trim().length < 8 ||
+            // Labels and values are paired by position, not by the order the engine read them (US-09).
+            val lines = reading.textBlocks.flatMap { it.lines }.mapNotNull { line ->
+                line.boundingBox?.let { box -> OcrLine(line.text, box.left, box.top, box.bottom) }
+            }
+            val text = if (lines.isEmpty()) reading.text else VoucherLayout.rows(lines)
+            OcrReading(VoucherTextParser.parse(text, confidence), reading.text.trim().length < 8 ||
                 (confidence != null && confidence < BigDecimal("0.40")))
         } finally {
             recognizer.close()

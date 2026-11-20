@@ -52,4 +52,42 @@ class VoucherTextParserTest {
         assertNull(result.amount)
         assertFalse(result.isValid(LocalDate.of(2026, 10, 9)))
     }
+
+    @Test fun aHeadingIsNoOperationCodeAndShortLabelsAreRead() {
+        assertEquals("00123456", VoucherTextParser.parse("Operación exitosa\nNúmero de operación  00123456", null).operationCode)
+        assertEquals("03817425", VoucherTextParser.parse("Nro. de operación  03817425", null).operationCode)
+        assertEquals("004512", VoucherTextParser.parse("NRO OPERACION: 004512", null).operationCode)
+        assertEquals("55120983", VoucherTextParser.parse("N° de operación: 55120983", null).operationCode)
+        assertEquals("PL-88213", VoucherTextParser.parse("Código de operación  PL-88213", null).operationCode)
+    }
+
+    @Test fun transferLabelsAndAThousandsGroupSplitByTheOcrAreRead() {
+        assertEquals(BigDecimal("1250.50"), VoucherTextParser.parse("Monto transferido  S/ 1,250.50", null).amount)
+        assertEquals(BigDecimal("3000.00"), VoucherTextParser.parse("Monto enviado  S/ 3,000.00", null).amount)
+        val ticket = VoucherTextParser.parse("IMPORTE: S/ 2, 500.00", null)
+        assertEquals(BigDecimal("2500.00"), ticket.amount)
+        assertEquals("PEN", ticket.currency)
+    }
+
+    @Test fun withoutALabelOnlyASingleAmountWithItsCurrencyIsTaken() {
+        val wallet = VoucherTextParser.parse("¡Pago exitoso!\nS/ 50\nInmobiliaria Prueba SAC", null)
+        assertEquals(BigDecimal("50"), wallet.amount)
+        assertEquals("PEN", wallet.currency)
+        assertNull(VoucherTextParser.parse("S/ 50\nComisión S/ 1.50", null).amount)
+        assertNull(VoucherTextParser.parse("Cuenta 191-0488\n15.11.2026", null).amount)
+    }
+
+    @Test fun datesWithTheMonthInLettersAreRead() {
+        assertEquals("2026-11-19", VoucherTextParser.parse("19 nov. 2026| 02:32 p. m.", null).operationDate)
+        assertEquals("2026-09-05", VoucherTextParser.parse("5 de setiembre de 2026", null).operationDate)
+        assertEquals("2026-09-05", VoucherTextParser.parse("05 Sep 2026", null).operationDate)
+        assertNull(VoucherTextParser.parse("31 feb. 2026", null).operationDate)
+        assertEquals("2026-11-15", VoucherTextParser.parse("Fecha  15.11.2026\n1 dic 2026", null).operationDate)
+    }
+
+    @Test fun anOperationCodeNeedsADigitOnTheRowOfItsLabel() {
+        assertNull(VoucherTextParser.parse("Operación exitosa\nBuscar", null).operationCode)
+        assertNull(VoucherTextParser.parse("Nro. de operación\nO Buscar\n03817425", null).operationCode)
+        assertNull(VoucherTextParser.parse("Fecha de operación: 2026-11-17", null).operationCode)
+    }
 }
