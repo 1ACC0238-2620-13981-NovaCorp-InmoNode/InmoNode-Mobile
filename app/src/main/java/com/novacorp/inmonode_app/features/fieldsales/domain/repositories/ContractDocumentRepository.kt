@@ -8,8 +8,12 @@ interface ContractDocumentRepository {
     /** The template in force; until the backend sends one with the portfolio, the one shipped with the app. */
     suspend fun template(): ContractTemplate
 
-    /** Writes [contract] as the PDF of [reservationId], replacing the previous one; [footer] gets the page and the page count. */
-    suspend fun render(reservationId: String, contract: ContractTemplate, footer: (page: Int, pages: Int) -> String): ContractPdf
+    /**
+     * Writes [contract] as the only PDF of [reservationId], replacing the previous one. [name] is the file name the buyer
+     * sees when it is shared, without extension; [footer] gets the page and the page count.
+     */
+    suspend fun render(reservationId: String, name: String, contract: ContractTemplate,
+        footer: (page: Int, pages: Int) -> String): ContractPdf
 
     /** Removes the PDF of [reservationId], if any, because it holds the buyer's data. */
     suspend fun delete(reservationId: String)

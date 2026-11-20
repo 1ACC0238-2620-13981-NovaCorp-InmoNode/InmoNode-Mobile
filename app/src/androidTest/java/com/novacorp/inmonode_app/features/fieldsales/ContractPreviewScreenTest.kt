@@ -90,7 +90,7 @@ class ContractPreviewScreenTest {
         compose.onNode(isToggleable()).performScrollTo().performClick()
         compose.onNodeWithText("Confirmar separación").assertIsEnabled()
         screenshot("contract-ready")
-        assert(File(context.cacheDir, "contracts/$ID.pdf").exists())
+        assert(File(context.cacheDir, "contracts/$ID/contrato-preliminar-N-02.pdf").exists())
     }
 
     /** Saved in the app cache so a reviewer can pull it with run-as. */

@@ -10,7 +10,7 @@ internal class ContractDocumentsFake : ContractDocumentRepository {
     val rendered = mutableListOf<String>()
     val deleted = mutableListOf<String>()
     override suspend fun template() = ContractTemplate.parse(File("src/main/assets/contracts/preliminary-separation.txt").readText())
-    override suspend fun render(reservationId: String, contract: ContractTemplate, footer: (Int, Int) -> String): ContractPdf {
+    override suspend fun render(reservationId: String, name: String, contract: ContractTemplate, footer: (Int, Int) -> String): ContractPdf {
         rendered += reservationId
         return ContractPdf(File("$reservationId.pdf"), 1)
     }
