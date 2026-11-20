@@ -121,7 +121,27 @@
     <string name="reservation_lot_price">Precio del lote</string>
     <string name="reservation_text_count">%1$d/%2$d</string>
     <string name="contract_ack">He revisado los datos y el contrato preliminar.</string>
-    <string name="contract_missing">Faltan datos para generar el contrato. El prospecto debe tener estado civil.</string>
+    <string name="contract_missing">Selecciona el estado civil del prospecto para generar el contrato.</string>
+    <string name="contract_missing_title">No se puede generar el contrato</string>
+    <string name="contract_missing_fields">Falta completar: %1$s.</string>
+    <string name="contract_missing_elsewhere">Este dato no se puede completar en este paso. Vuelve y revisa la separación.</string>
+    <string name="contract_complete">Completar dato</string>
+    <string name="contract_cancel">Cancelar</string>
+    <string name="contract_field_buyer_name">Nombre del prospecto</string>
+    <string name="contract_field_buyer_document">Documento de identidad del prospecto</string>
+    <string name="contract_field_marital">Estado civil del prospecto</string>
+    <string name="contract_field_lot">Lote de la separación en el catálogo descargado</string>
+    <string name="contract_field_lot_price">Precio del lote</string>
+    <string name="contract_field_initial_amount">Monto inicial de la separación</string>
+    <string name="contract_generating">Generando el contrato en el dispositivo…</string>
+    <plurals name="contract_pages">
+        <item quantity="one">%1$d página · Generado sin conexión · Plantilla v%2$s</item>
+        <item quantity="many">%1$d páginas · Generado sin conexión · Plantilla v%2$s</item>
+        <item quantity="other">%1$d páginas · Generado sin conexión · Plantilla v%2$s</item>
+    </plurals>
+    <string name="contract_page">Página %1$d de %2$d del contrato preliminar</string>
+    <string name="contract_share">Compartir contrato</string>
+    <string name="contract_summary">Resumen de la separación</string>
     <string name="voucher_capture">Escanear voucher</string>
     <string name="voucher_camera">Abrir cámara</string>
     <string name="voucher_gallery">Elegir imagen</string>
@@ -186,7 +206,7 @@
     <string name="status_review">Revisar datos OCR</string>
     <string name="profile_pending">Registros pendientes</string>
     <string name="profile_catalog_version">Versión del catálogo</string>
-    <string name="reservation_contract_note">Vista preliminar de los datos de separación. La plantilla contractual aprobada aún no está disponible.</string>
+    <string name="reservation_contract_note">Borrador generado en este dispositivo, sin conexión y sin valor legal: el contrato oficial lo emite el back-office después de verificar el voucher. Pellizca una página para ampliarla.</string>
     <string name="voucher_confidence">Confianza OCR %1$d%%</string>
     <string name="voucher_manual">Editado manualmente · se notificará a back-office</string>
     <string name="field_refresh">Actualizar</string>

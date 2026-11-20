@@ -7,13 +7,16 @@ import kotlinx.coroutines.launch
 import com.novacorp.inmonode_app.features.fieldsales.domain.repositories.*
 import com.novacorp.inmonode_app.features.fieldsales.application.*
 import com.novacorp.inmonode_app.features.fieldsales.domain.model.NegotiationTerms
+import com.novacorp.inmonode_app.features.fieldsales.domain.model.PreliminaryContract
 @HiltViewModel
 class ReservationWizardViewModel @Inject constructor(portfolio:PortfolioRepository,prospects:ProspectRepository,
  reservations:ReservationRepository,private val begin:BeginReservationUseCase,private val confirm:ReserveLotUseCase,
- private val cancel:CancelReservationDraftUseCase,private val complete:CompleteProspectUseCase,private val saved:SavedStateHandle):ViewModel() {
+ private val cancel:CancelReservationDraftUseCase,private val complete:CompleteProspectUseCase,private val preview:PreviewContractUseCase,
+ private val saved:SavedStateHandle):ViewModel() {
  private val _uiState=MutableStateFlow(ReservationWizardUiState(prospectId=saved["prospectId"],amount=saved["amount"]?:"",
   discount=saved["discount"]?:"",bonus=saved["bonus"]?:"",notes=saved["notes"]?:""))
  val uiState=_uiState.asStateFlow()
+ private val contractWanted=MutableStateFlow(false)
  init {
   viewModelScope.launch { saved.getStateFlow<String?>("prospectId",null).collect { id -> _uiState.update { it.copy(prospectId=id) } } }
   viewModelScope.launch { combine(portfolio.observePortfolio(),prospects.observeProspects(),reservations.observeReservations()) { p, people, rows ->
@@ -21,8 +24,16 @@ class ReservationWizardViewModel @Inject constructor(portfolio:PortfolioReposito
    val reservation=rows.firstOrNull { it.id==saved.get<String>("reservationId") }
    val lotId=reservation?.lotId?:saved.get<Long>("lotId")
    val project=p.projects.firstOrNull { pr -> pr.lots.any { it.id==lotId } }
-   _uiState.update { it.copy(project=project,lot=project?.lots?.firstOrNull { l -> l.id==lotId },prospects=people,reservation=reservation) }
-  } } }
+   _uiState.update { it.copy(project=project,lot=project?.lots?.firstOrNull { l -> l.id==lotId },prospects=people,reservation=reservation,loaded=true) }
+  } }
+  // US-13: once the contract step asks for it, the PDF is generated again whenever the stored data change (for example the marital status).
+  viewModelScope.launch { combine(contractWanted,_uiState.map { s -> s.contractData.takeIf { s.loaded } }.distinctUntilChanged()) { wanted,data ->
+   data?.takeIf { wanted } }.filterNotNull().collectLatest { data -> generate(data) } } }
+ private suspend fun generate(data:PreliminaryContract) { preview(data).fold(
+  { result -> _uiState.update { it.copy(contract=result,contractRevision=it.contractRevision+1,contractError=null) } },
+  { e -> _uiState.update { it.copy(contract=null,contractError=e.message) } }) }
+ /** Called by the contract step: renders the preliminary contract offline, or reports the missing data (US-13). */
+ fun previewContract() { contractWanted.value=true }
  // Editing a step-1 field clears the previous attempt's error, which may no longer apply.
  fun select(id:String) { saved["prospectId"]=id;_uiState.update { it.copy(prospectId=id,errorMessage=null) } }
  fun amount(v:String) { saved["amount"]=v;_uiState.update { it.copy(amount=v,errorMessage=null) } }

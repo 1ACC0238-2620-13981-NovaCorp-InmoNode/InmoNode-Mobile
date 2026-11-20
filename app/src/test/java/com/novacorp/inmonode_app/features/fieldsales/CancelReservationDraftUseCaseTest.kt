@@ -12,34 +12,38 @@ import org.junit.Test
 import java.math.BigDecimal
 
 class CancelReservationDraftUseCaseTest {
+    private val contracts = ContractDocumentsFake()
+
     @Test
-    fun discardsTheVoucherAfterCancellingTheDraft() = runTest {
+    fun discardsTheVoucherAndTheContractAfterCancellingTheDraft() = runTest {
         val reservations = FakeReservations(Result.success(Unit))
         val vouchers = VoucherRepositoryFake()
 
-        val result = CancelReservationDraftUseCase(reservations, vouchers)("draft-1")
+        val result = CancelReservationDraftUseCase(reservations, vouchers, contracts)("draft-1")
 
         assertTrue(result.isSuccess)
         assertEquals(listOf("draft-1"), reservations.cancelled)
         assertEquals(1, vouchers.discards)
+        assertEquals(listOf("draft-1"), contracts.deleted)
     }
 
     @Test
-    fun keepsTheVoucherWhenTheDraftCannotBeCancelled() = runTest {
+    fun keepsTheVoucherAndTheContractWhenTheDraftCannotBeCancelled() = runTest {
         val reservations = FakeReservations(Result.failure(IllegalStateException("Solo se puede cancelar un borrador local.")))
         val vouchers = VoucherRepositoryFake()
 
-        val result = CancelReservationDraftUseCase(reservations, vouchers)("synced-1")
+        val result = CancelReservationDraftUseCase(reservations, vouchers, contracts)("synced-1")
 
         assertTrue(result.isFailure)
         assertEquals(0, vouchers.discards)
+        assertTrue(contracts.deleted.isEmpty())
     }
 
     @Test
     fun aFailedVoucherCleanupDoesNotUndoTheCancellation() = runTest {
         val vouchers = VoucherRepositoryFake(Result.failure(IllegalStateException("disk")))
 
-        val result = CancelReservationDraftUseCase(FakeReservations(Result.success(Unit)), vouchers)("draft-1")
+        val result = CancelReservationDraftUseCase(FakeReservations(Result.success(Unit)), vouchers, contracts)("draft-1")
 
         assertTrue(result.isSuccess)
         assertEquals(1, vouchers.discards)

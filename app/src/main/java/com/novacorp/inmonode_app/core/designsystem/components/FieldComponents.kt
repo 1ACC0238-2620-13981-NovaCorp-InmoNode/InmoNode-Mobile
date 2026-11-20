@@ -14,7 +14,8 @@ import com.novacorp.inmonode_app.R
 /** Shared mobile form rhythm from the approved 360 x 800 frames. */
 @Composable
 fun FieldPage(title: String, modifier: Modifier = Modifier, onBack: (() -> Unit)? = null,
-    actions: @Composable ColumnScope.() -> Unit = {}, content: @Composable ColumnScope.() -> Unit) {
+    actions: @Composable ColumnScope.() -> Unit = {}, topActions: @Composable RowScope.() -> Unit = {},
+    content: @Composable ColumnScope.() -> Unit) {
     Column(modifier.fillMaxSize().imePadding()) {
         Surface(color = MaterialTheme.colorScheme.surface) {
             Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp),
@@ -24,7 +25,8 @@ fun FieldPage(title: String, modifier: Modifier = Modifier, onBack: (() -> Unit)
                         contentDescription = stringResource(R.string.field_back))
                 }
                 Text(title, style = if (onBack == null) MaterialTheme.typography.headlineMedium else MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.padding(8.dp))
+                    modifier = Modifier.padding(8.dp).weight(1f))
+                topActions()
             }
         }
         Column(Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()).padding(16.dp),
