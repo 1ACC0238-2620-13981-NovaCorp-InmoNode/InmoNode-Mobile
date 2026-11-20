@@ -14,12 +14,15 @@ internal fun PortfolioProjectDto.toEntity(ownerId: Long) = ProjectEntity(ownerId
     financingRules.annualInterestRate.toPlainString(), financingRules.maxTermMonths, financingRules.lateFeeRate.toPlainString())
 
 internal fun LotFeatureDto.toEntity(ownerId: Long, projectId: Long) = LotEntity(ownerId, id, projectId,
-    properties.code, properties.front.toPlainString(), properties.depth.toPlainString(), properties.area.toPlainString(),
-    properties.price.toPlainString(), properties.currency, properties.status, gson.toJson(geometry.coordinates))
+    properties.code, properties.front?.toPlainString().orEmpty(), properties.depth?.toPlainString().orEmpty(),
+    properties.area.toPlainString(), properties.price.toPlainString(), properties.currency, properties.status,
+    gson.toJson(geometry.coordinates))
 
 internal fun LotEntity.toDomain(reservation: ReservationEntity? = null): Lot {
     val rings: List<List<List<Double>>> = gson.fromJson(polygonJson, polygonType)
-    return Lot(id, projectId, code, LotDimensions(front.toBigDecimal(), depth.toBigDecimal(), area.toBigDecimal()),
+    val dimensions = LotDimensions(front.ifEmpty { null }?.toBigDecimal(), depth.ifEmpty { null }?.toBigDecimal(),
+        area.toBigDecimal())
+    return Lot(id, projectId, code, dimensions,
         rings.map { ring -> ring.map { GeoPoint(it[0], it[1]) } }, price.toBigDecimal(), currency,
         if (reservation != null) LotStatus.BLOCKED else LotStatus.valueOf(status), reservation?.id)
 }
@@ -55,7 +58,8 @@ internal fun FieldPortfolioDto.validate() {
         project.lots.features.forEach { feature ->
             require(feature.id > 0 && feature.type == "Feature" && feature.geometry.type == "Polygon")
             require(feature.properties.price.signum() > 0 && feature.properties.area.signum() > 0)
-            require(feature.properties.front.signum() > 0 && feature.properties.depth.signum() > 0)
+            // An irregular lot may come without front and depth; when they come, they are measures.
+            require(listOf(feature.properties.front, feature.properties.depth).all { it == null || it.signum() > 0 })
             java.util.Currency.getInstance(feature.properties.currency)
             LotStatus.valueOf(feature.properties.status)
             require(feature.geometry.coordinates.isNotEmpty())

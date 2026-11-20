@@ -118,6 +118,22 @@ class FieldPersistenceTest {
         assertEquals(stable.projects, portfolio.observePortfolio().first().projects)
     }
 
+    /** T49: the backend accepts plan lots without front or depth, as irregular ones are; they must not break the download. */
+    @Test fun anIrregularLotWithoutFrontOrDepthIsDownloadedAndKeptOffline() = runBlocking {
+        service.catalog = service.catalog.copy(projects = service.catalog.projects.map { project ->
+            project.copy(lots = project.lots.copy(features = project.lots.features.map { lot ->
+                lot.copy(properties = lot.properties.copy(front = null, depth = null))
+            }))
+        })
+
+        val downloaded = portfolio.download().getOrThrow().projects.single().lots.single()
+
+        assertNull(downloaded.dimensions.front)
+        assertNull(downloaded.dimensions.depth)
+        assertEquals(BigDecimal("120"), downloaded.dimensions.area)
+        assertEquals(downloaded, portfolio.observePortfolio().first().projects.single().lots.single())
+    }
+
     @Test fun interruptedOrIncompleteSyncNeverAcknowledgesLocalRows() = runBlocking {
         val reservation = pendingReservation()
         service.missingAcknowledgement = true
