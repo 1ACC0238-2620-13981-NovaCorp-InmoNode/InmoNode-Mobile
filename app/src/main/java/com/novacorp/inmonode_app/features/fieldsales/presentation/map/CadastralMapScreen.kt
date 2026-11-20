@@ -1,9 +1,11 @@
 package com.novacorp.inmonode_app.features.fieldsales.presentation.map
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -51,8 +53,10 @@ fun CadastralMapScreen(modifier: Modifier=Modifier, viewModel: CadastralMapViewM
                         TextButton(onClick={viewModel.filter(false);viewModel.available(false)}) { Text(stringResource(R.string.map_clear)) }
                     }
                 }
-                OutlinedButton(onClick={reset++},modifier=Modifier.align(Alignment.BottomEnd).padding(8.dp)) {
-                    Text(stringResource(R.string.map_center)) }
+                // A filled round button (mock-up M06): the outlined one had no background and looked disabled on the map.
+                SmallFloatingActionButton(onClick={reset++},modifier=Modifier.align(Alignment.BottomEnd).padding(12.dp),shape=CircleShape,
+                    containerColor=MaterialTheme.colorScheme.surface,contentColor=MaterialTheme.colorScheme.primary) {
+                    Icon(painterResource(R.drawable.ic_center_map),contentDescription=stringResource(R.string.map_center)) }
             }
         }
         LotLegend(Modifier.padding(16.dp))

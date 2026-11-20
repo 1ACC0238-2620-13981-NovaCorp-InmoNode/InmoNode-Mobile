@@ -17,7 +17,7 @@ import org.junit.Test
 import java.io.File
 import java.math.BigDecimal
 
-/** The map key shows each lot state with the colour the map paints it (mock-up M06). */
+/** The map key shows each lot state with its colour, and the centre control reads as an active button (mock-up M06). */
 class CadastralMapScreenTest {
     @get:Rule val compose = createComposeRule()
     private val context = InstrumentationRegistry.getInstrumentation().targetContext
@@ -39,13 +39,15 @@ class CadastralMapScreenTest {
         override suspend fun download() = Result.success(Portfolio(listOf(project), "2026-11-20", null))
     }
 
-    @Test fun legendShowsEachStateWithItsColour() {
+    @Test fun legendShowsEachStateAndTheCentreControlIsAnActiveButton() {
         val viewModel = CadastralMapViewModel(portfolio, ConnectivityMonitor(context))
         compose.setContent { InmoNodeAppTheme {
             CadastralMapScreen(viewModel = viewModel, onDownload = {}, onSimulate = {}, onReserve = {})
         } }
         compose.waitUntil(10_000) { compose.onAllNodesWithText("Disponible").fetchSemanticsNodes().isNotEmpty() }
         listOf("Disponible", "Separado", "Vendido").forEach { compose.onNodeWithText(it).assertIsDisplayed() }
+        compose.onNodeWithContentDescription("Centrar mapa").assertIsDisplayed().assertIsEnabled().assertHasClickAction()
+            .performClick()
         screenshot("map-legend")
     }
 
