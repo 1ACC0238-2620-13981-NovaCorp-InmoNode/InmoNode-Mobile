@@ -79,6 +79,7 @@ class ContractPreviewScreenTest {
 
         compose.onNodeWithText("Completar dato").performClick()
         compose.onNodeWithText("No se puede generar el contrato").assertDoesNotExist()
+        compose.onNodeWithText("Datos OCR").assertExists()
         compose.onNode(hasText("Estado civil") and hasClickAction()).performClick()
         compose.onNodeWithText("Casado(a)").performClick()
 
@@ -91,6 +92,18 @@ class ContractPreviewScreenTest {
         compose.onNodeWithText("Confirmar separación").assertIsEnabled()
         screenshot("contract-ready")
         assert(File(context.cacheDir, "contracts/$ID/contrato-preliminar-N-02.pdf").exists())
+    }
+
+    @Test fun contractOpenedFromSeparationsShowsNoWizardStepsOrConfirmation() {
+        people.value = people.value.map { it.copy(maritalStatus = "Soltero(a)") }
+        compose.setContent { InmoNodeAppTheme { ContractPreviewStep(viewModel = viewModel(), readOnly = true, onBack = {}, onConfirmed = {}) } }
+        compose.waitUntil(10_000) {
+            compose.onAllNodesWithContentDescription("del contrato preliminar", substring = true).fetchSemanticsNodes().isNotEmpty()
+        }
+        compose.onNodeWithText("Datos OCR").assertDoesNotExist()
+        compose.onNodeWithText("Confirmar separación").assertDoesNotExist()
+        compose.onNodeWithContentDescription("Compartir contrato").assertIsEnabled()
+        screenshot("contract-read-only")
     }
 
     /** Saved in the app cache so a reviewer can pull it with run-as. */
