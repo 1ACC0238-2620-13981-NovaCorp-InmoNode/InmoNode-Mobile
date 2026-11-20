@@ -170,6 +170,29 @@
     <string name="sync_background_retry">La sincronización se pausó y se reintentará automáticamente (intento %1$d). Los registros siguen pendientes.</string>
     <string name="sync_conflicts">Resolver conflicto</string>
     <string name="sync_lot_held_until">Lote bloqueado hasta %1$s</string>
+    <string name="sync_result_nothing">No hay registros pendientes: todo ya está sincronizado.</string>
+    <string name="sync_result_sent">Enviados al servidor: %1$s.</string>
+    <string name="sync_result_and">y</string>
+    <plurals name="sync_result_prospects">
+        <item quantity="one">%d prospecto</item>
+        <item quantity="many">%d prospectos</item>
+        <item quantity="other">%d prospectos</item>
+    </plurals>
+    <plurals name="sync_result_reservations">
+        <item quantity="one">%d separación</item>
+        <item quantity="many">%d separaciones</item>
+        <item quantity="other">%d separaciones</item>
+    </plurals>
+    <plurals name="sync_result_vouchers">
+        <item quantity="one">%d voucher</item>
+        <item quantity="many">%d vouchers</item>
+        <item quantity="other">%d vouchers</item>
+    </plurals>
+    <plurals name="sync_result_conflicts">
+        <item quantity="one">%d separación tiene conflicto de disponibilidad: resuélvelo en la lista.</item>
+        <item quantity="many">%d separaciones tienen conflicto de disponibilidad: resuélvelos en la lista.</item>
+        <item quantity="other">%d separaciones tienen conflicto de disponibilidad: resuélvelos en la lista.</item>
+    </plurals>
     <plurals name="nav_conflicts_badge">
         <item quantity="one">%d conflicto de lote por resolver</item>
         <item quantity="other">%d conflictos de lote por resolver</item>
