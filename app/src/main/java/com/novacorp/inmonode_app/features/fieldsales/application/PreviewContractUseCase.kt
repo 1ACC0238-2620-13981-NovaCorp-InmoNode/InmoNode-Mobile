@@ -27,7 +27,8 @@ class PreviewContractUseCase internal constructor(private val documents: Contrac
         val template = documents.template()
         val filled = template.fill(contract.values(time.zone))
         val generated = GENERATED.format(time)
-        val pdf = documents.render(requireNotNull(contract.reservation).id, filled) { page, pages ->
+        val name = "contrato-preliminar-${requireNotNull(contract.lot).code}"
+        val pdf = documents.render(requireNotNull(contract.reservation).id, name, filled) { page, pages ->
             "Borrador sin valor legal · Plantilla v${template.version} · Generado sin conexión el $generated · Página $page de $pages"
         }
         ContractPreview.Ready(pdf, template.version)

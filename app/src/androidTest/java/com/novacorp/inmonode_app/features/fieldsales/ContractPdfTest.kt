@@ -32,8 +32,9 @@ class ContractPdfTest {
     @Test fun bundledTemplateBecomesAPdfAndroidCanOpen() = runBlocking {
         val filled = documents.template().fill(contract.values(ZoneId.of("America/Lima")))
         val footers = mutableListOf<Pair<Int, Int>>()
-        val pdf = documents.render("test-contract", filled) { page, pages -> footers += page to pages; "Página $page de $pages" }
+        val pdf = documents.render("test-contract", "contrato-preliminar-N-02", filled) { page, pages -> footers += page to pages; "Página $page de $pages" }
         try {
+            assertEquals("contrato-preliminar-N-02.pdf", pdf.file.name)
             assertEquals((1..pdf.pages).map { it to pdf.pages }, footers)
             assertEquals(pdf.pages, pageCount(pdf.file))
             assertTrue(firstPageHasInk(pdf.file))
@@ -50,10 +51,10 @@ class ContractPdfTest {
             ContractTemplate.Section("CLÁUSULA $it", "Texto de la cláusula $it. ".repeat(30) + "\n\nSegundo párrafo de la cláusula $it.")
         })
         try {
-            val first = documents.render("test-contract", long) { page, pages -> "$page/$pages" }
+            val first = documents.render("test-contract", "contrato-preliminar-N-02", long) { page, pages -> "$page/$pages" }
             assertTrue("pages=${first.pages}", first.pages > 5)
             assertEquals(first.pages, pageCount(first.file))
-            val short = documents.render("test-contract", long.copy(sections = long.sections.take(1))) { page, pages -> "$page/$pages" }
+            val short = documents.render("test-contract", "contrato-preliminar-N-02", long.copy(sections = long.sections.take(1))) { page, pages -> "$page/$pages" }
             assertEquals(first.file, short.file)
             assertEquals(1, pageCount(short.file))
         } finally {
@@ -63,7 +64,20 @@ class ContractPdfTest {
 
     @Test fun aNameThatIsNotASeparationIdCannotChooseTheFile() = runBlocking {
         val template = ContractTemplate("t", "T", listOf(ContractTemplate.Section("A", "texto")))
-        assertTrue(runCatching { documents.render("../shared_prefs/x", template) { _, _ -> "" } }.exceptionOrNull() is IllegalArgumentException)
+        assertTrue(runCatching { documents.render("../shared_prefs/x", "x", template) { _, _ -> "" } }.exceptionOrNull() is IllegalArgumentException)
+    }
+
+    @Test fun theSharedNameStaysInsideTheFolderAndASeparationKeepsOnePdf() = runBlocking {
+        val template = ContractTemplate("t", "T", listOf(ContractTemplate.Section("A", "texto")))
+        try {
+            val odd = documents.render("test-contract", "contrato preliminar/../N 02", template) { _, _ -> "" }
+            assertEquals("contrato-preliminar-N-02.pdf", odd.file.name)
+            val renamed = documents.render("test-contract", "contrato-preliminar-N-03", template) { _, _ -> "" }
+            assertEquals(listOf("contrato-preliminar-N-03.pdf"), renamed.file.parentFile!!.list()!!.toList())
+        } finally {
+            documents.delete("test-contract")
+        }
+        assertFalse(File(context.cacheDir, "contracts/test-contract").exists())
     }
 
     private fun pageCount(file: File): Int = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY).use { fd ->

@@ -16,10 +16,12 @@ import java.time.ZonedDateTime
 class PreviewContractUseCaseTest {
     private class Documents : ContractDocumentRepository {
         var rendered: ContractTemplate? = null
+        var name: String? = null
         val footers = mutableListOf<String>()
         override suspend fun template() = ContractTemplate.parse(File("src/main/assets/contracts/preliminary-separation.txt").readText())
-        override suspend fun render(reservationId: String, contract: ContractTemplate, footer: (Int, Int) -> String): ContractPdf {
+        override suspend fun render(reservationId: String, name: String, contract: ContractTemplate, footer: (Int, Int) -> String): ContractPdf {
             rendered = contract
+            this.name = name
             footers += footer(1, 2)
             footers += footer(2, 2)
             return ContractPdf(File("$reservationId.pdf"), 2)
@@ -40,6 +42,7 @@ class PreviewContractUseCaseTest {
         val preview = PreviewContractUseCase(documents) { now }(PreliminaryContract(reservation, prospect, lot, project)).getOrThrow()
         assertEquals(ContractPreview.Ready(ContractPdf(File("r1.pdf"), 2), "1"), preview)
         assertTrue(documents.rendered!!.sections.none { it.body.contains("{{") })
+        assertEquals("contrato-preliminar-N-02", documents.name)
         assertEquals("Borrador sin valor legal · Plantilla v1 · Generado sin conexión el 19/11/2026 21:50 · Página 2 de 2",
             documents.footers[1])
     }
