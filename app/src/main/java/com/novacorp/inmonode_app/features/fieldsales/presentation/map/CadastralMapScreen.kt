@@ -1,9 +1,11 @@
 package com.novacorp.inmonode_app.features.fieldsales.presentation.map
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -51,15 +53,13 @@ fun CadastralMapScreen(modifier: Modifier=Modifier, viewModel: CadastralMapViewM
                         TextButton(onClick={viewModel.filter(false);viewModel.available(false)}) { Text(stringResource(R.string.map_clear)) }
                     }
                 }
-                OutlinedButton(onClick={reset++},modifier=Modifier.align(Alignment.BottomEnd).padding(8.dp)) {
-                    Text(stringResource(R.string.map_center)) }
+                // A filled round button (mock-up M06): the outlined one had no background and looked disabled on the map.
+                SmallFloatingActionButton(onClick={reset++},modifier=Modifier.align(Alignment.BottomEnd).padding(12.dp),shape=CircleShape,
+                    containerColor=MaterialTheme.colorScheme.surface,contentColor=MaterialTheme.colorScheme.primary) {
+                    Icon(painterResource(R.drawable.ic_center_map),contentDescription=stringResource(R.string.map_center)) }
             }
         }
-        Row(Modifier.padding(16.dp),horizontalArrangement=Arrangement.spacedBy(16.dp)) {
-            Text(stringResource(R.string.map_available),style=MaterialTheme.typography.bodySmall)
-            Text(stringResource(R.string.map_reserved),style=MaterialTheme.typography.bodySmall)
-            Text(stringResource(R.string.map_sold),style=MaterialTheme.typography.bodySmall)
-        }
+        LotLegend(Modifier.padding(16.dp))
     }
     state.selectedLot?.let { lot ->
         if(lot.isAvailable()) LotDetailSheet(lot,{viewModel.select(null)},

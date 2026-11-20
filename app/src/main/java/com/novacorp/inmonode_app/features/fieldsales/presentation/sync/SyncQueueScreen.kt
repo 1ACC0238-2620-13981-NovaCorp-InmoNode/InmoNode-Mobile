@@ -42,7 +42,7 @@ fun SyncQueueScreen(modifier:Modifier=Modifier,viewModel:SyncQueueViewModel=hilt
       ReservationStatus.CONFLICT->R.string.reservation_conflict
       ReservationStatus.SYNCED->R.string.reservation_synced
       else->R.string.reservation_pending }))
-     row.blockedUntil?.let { Text(displayTimestamp(it),style=MaterialTheme.typography.bodySmall) }
+     row.blockedUntil?.let { Text(stringResource(R.string.sync_lot_held_until,displayTimestamp(it)),style=MaterialTheme.typography.bodySmall) }
      if(row.awaitsReassignment) TextButton(onClick={onConflict(row.id)}) { Text(stringResource(R.string.sync_conflicts)) }
      if(row.status==ReservationStatus.DRAFT) TextButton(onClick={onDraft(row.id)}) { Text(stringResource(R.string.field_continue)) }
     } } }

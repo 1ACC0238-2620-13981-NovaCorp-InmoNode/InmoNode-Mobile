@@ -75,6 +75,7 @@
     <string name="map_available">Disponibles</string>
     <string name="map_reserved">Separado</string>
     <string name="map_sold">Vendido</string>
+    <string name="map_legend_available">Disponible</string>
     <string name="map_area">Metraje</string>
     <string name="map_clear">Limpiar</string>
     <string name="map_no_results">Sin resultados para estos filtros</string>
@@ -168,6 +169,7 @@
     <string name="sync_background_running">Enviando registros pendientes en segundo plano…</string>
     <string name="sync_background_retry">La sincronización se pausó y se reintentará automáticamente (intento %1$d). Los registros siguen pendientes.</string>
     <string name="sync_conflicts">Resolver conflicto</string>
+    <string name="sync_lot_held_until">Lote bloqueado hasta %1$s</string>
     <plurals name="nav_conflicts_badge">
         <item quantity="one">%d conflicto de lote por resolver</item>
         <item quantity="other">%d conflictos de lote por resolver</item>
