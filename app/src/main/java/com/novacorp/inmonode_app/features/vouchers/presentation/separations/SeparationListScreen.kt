@@ -30,7 +30,7 @@ fun SeparationListScreen(modifier:Modifier=Modifier,viewModel:SeparationsViewMod
      Text(s.lot(row.lotId)?.code?:row.lotId.toString(),style=MaterialTheme.typography.headlineSmall)
      Text("${s.prospects.firstOrNull { it.id==row.prospectId }?.fullName.orEmpty()} · ${row.initialAmount}")
      StatusChip(s.summaries[row.id]?.status?:row.serverStatus?:row.status.name)
-     (s.summaries[row.id]?.waitingUntil?:row.blockedUntil)?.let { Text(displayTimestamp(it),style=MaterialTheme.typography.bodySmall) }
+     (s.summaries[row.id]?.waitingUntil?:row.blockedUntil)?.let { Text(stringResource(R.string.lot_held_until,displayTimestamp(it)),style=MaterialTheme.typography.bodySmall) }
     } } }
   }
  }
