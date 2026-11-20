@@ -104,7 +104,7 @@
     <string name="reservation_contract">Contrato preliminar</string>
     <string name="reservation_confirm">Confirmar separación</string>
     <string name="reservation_saved">Separación registrada</string>
-    <string name="reservation_saved_help">La separación y su voucher están guardados. Sincroniza para confirmar la disponibilidad con el servidor.</string>
+    <string name="reservation_saved_help">La separación y su voucher están guardados y se enviarán automáticamente para confirmar la disponibilidad con el servidor.</string>
     <string name="reservation_draft">Borrador</string>
     <string name="reservation_draft_help">Al continuar se guarda un borrador en este dispositivo. Después capturarás el voucher y revisarás el contrato preliminar.</string>
     <string name="reservation_conflict">Conflicto de disponibilidad</string>
@@ -141,8 +141,22 @@
     <string name="sync_background_running">Enviando registros pendientes en segundo plano…</string>
     <string name="sync_background_retry">La sincronización se pausó y se reintentará automáticamente (intento %1$d). Los registros siguen pendientes.</string>
     <string name="sync_conflicts">Resolver conflicto</string>
+    <plurals name="nav_conflicts_badge">
+        <item quantity="one">%d conflicto de lote por resolver</item>
+        <item quantity="other">%d conflictos de lote por resolver</item>
+    </plurals>
     <string name="sync_reassign">Reasignar lote</string>
-    <string name="sync_reassign_help">Selecciona otro lote disponible. La separación conservará el prospecto y el comprobante.</string>
+    <string name="sync_reassign_none">No hay lotes disponibles en este proyecto. Elige otro proyecto o actualiza el portafolio cuando haya conexión.</string>
+    <string name="voucher_awaits_lot">Se enviará cuando la separación tenga un nuevo lote.</string>
+    <string name="sync_reassign_help">Se conservan los datos del prospecto, el monto inicial de %1$s y, si los hay, los términos negociados y el voucher. Elige un lote disponible; puede ser el mismo si volvió a quedar libre.</string>
+    <string name="sync_conflict_unavailable">El lote %1$s no estaba disponible cuando tu separación llegó al servidor: otra operación lo tomó antes.</string>
+    <string name="sync_conflict_not_found">El lote %1$s ya no existe en el catálogo del proyecto.</string>
+    <string name="conflict_channel_name">Conflictos de lotes</string>
+    <string name="conflict_channel_description">Avisa cuando otra operación tomó el lote de una separación hecha sin conexión.</string>
+    <plurals name="conflict_notification_text">
+        <item quantity="one">%d separación hecha sin conexión no pudo tomar su lote. Abre la app para elegir otro lote para el prospecto.</item>
+        <item quantity="other">%d separaciones hechas sin conexión no pudieron tomar su lote. Abre la app para elegir otros lotes para los prospectos.</item>
+    </plurals>
     <string name="separations_title">Separaciones</string>
     <string name="separation_detail">Detalle de separación</string>
     <string name="separation_evidences">Comprobantes de pago</string>

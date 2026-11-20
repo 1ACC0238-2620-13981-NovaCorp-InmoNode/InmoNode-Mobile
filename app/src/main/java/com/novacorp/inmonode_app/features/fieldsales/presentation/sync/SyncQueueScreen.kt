@@ -43,14 +43,17 @@ fun SyncQueueScreen(modifier:Modifier=Modifier,viewModel:SyncQueueViewModel=hilt
       ReservationStatus.SYNCED->R.string.reservation_synced
       else->R.string.reservation_pending }))
      row.blockedUntil?.let { Text(displayTimestamp(it),style=MaterialTheme.typography.bodySmall) }
-     if(row.status==ReservationStatus.CONFLICT&&row.conflictReason!="REASSIGNED") TextButton(onClick={onConflict(row.id)}) { Text(stringResource(R.string.sync_conflicts)) }
+     if(row.awaitsReassignment) TextButton(onClick={onConflict(row.id)}) { Text(stringResource(R.string.sync_conflicts)) }
      if(row.status==ReservationStatus.DRAFT) TextButton(onClick={onDraft(row.id)}) { Text(stringResource(R.string.field_continue)) }
     } } }
    items(s.prospects.filter { !it.synced }.sortedBy { it.registeredAt },key={"prospect-"+it.id}) { p -> OutlinedCard {
     Column(Modifier.padding(16.dp)) { Text(p.fullName,style=MaterialTheme.typography.titleMedium);Text(stringResource(R.string.prospect_pending)) } } }
    items(s.vouchers.filter { it.status!=VoucherStatus.SYNCED }.sortedBy { it.capturedAt },key={"voucher-"+it.id}) { v -> OutlinedCard {
     Column(Modifier.padding(16.dp)) { Text(stringResource(R.string.wizard_voucher),style=MaterialTheme.typography.titleMedium)
-     StatusChip(v.status.name);FieldError(v.errorMessage) } } }
+     // A voucher of a separation that lost its lot waits for the new lot instead of the next sync (US-12).
+     if(s.reservations.firstOrNull { it.id==v.reservationId }?.awaitsReassignment==true) Text(stringResource(R.string.voucher_awaits_lot))
+     else StatusChip(v.status.name)
+     FieldError(v.errorMessage) } } }
   }
   Box(Modifier.padding(16.dp)) { PrimaryButton(stringResource(R.string.sync_start),!s.syncing&&!s.offline,viewModel::synchronize) }
  }
