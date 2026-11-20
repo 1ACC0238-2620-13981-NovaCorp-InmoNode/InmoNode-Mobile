@@ -3,10 +3,12 @@ package com.novacorp.inmonode_app.features.fieldsales.infrastructure.contract
 import android.graphics.Color
 import android.graphics.Typeface
 import android.graphics.pdf.PdfDocument
+import android.graphics.text.LineBreaker
 import android.os.Build
 import android.text.Layout
 import android.text.StaticLayout
 import android.text.TextPaint
+import androidx.core.graphics.withTranslation
 import com.novacorp.inmonode_app.features.fieldsales.domain.model.ContractTemplate
 import java.io.OutputStream
 
@@ -37,17 +39,13 @@ internal object ContractPdfWriter {
                 placements.filter { it.page == index }.forEach { placement ->
                     val top = placement.layout.getLineTop(placement.first).toFloat()
                     val bottom = placement.layout.getLineBottom(placement.last).toFloat()
-                    canvas.save()
-                    canvas.translate(MARGIN, placement.y - top)
-                    canvas.clipRect(0f, top, TEXT_WIDTH.toFloat(), bottom)
-                    placement.layout.draw(canvas)
-                    canvas.restore()
+                    canvas.withTranslation(MARGIN, placement.y - top) {
+                        clipRect(0f, top, TEXT_WIDTH.toFloat(), bottom)
+                        placement.layout.draw(this)
+                    }
                 }
                 val text = layout(footer(index + 1, pages), FOOTER, Layout.Alignment.ALIGN_CENTER)
-                canvas.save()
-                canvas.translate(MARGIN, PAGE_HEIGHT - MARGIN - text.height)
-                text.draw(canvas)
-                canvas.restore()
+                canvas.withTranslation(MARGIN, PAGE_HEIGHT - MARGIN - text.height) { text.draw(this) }
                 document.finishPage(page)
             }
             document.writeTo(out)
@@ -94,7 +92,7 @@ internal object ContractPdfWriter {
     private fun layout(text: String, paint: TextPaint, alignment: Layout.Alignment = Layout.Alignment.ALIGN_NORMAL): StaticLayout =
         StaticLayout.Builder.obtain(text, 0, text.length, paint, TEXT_WIDTH).setAlignment(alignment)
             .setLineSpacing(0f, 1.2f).setIncludePad(false).apply {
-                if (paint === BODY && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) setJustificationMode(Layout.JUSTIFICATION_MODE_INTER_WORD)
+                if (paint === BODY && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) setJustificationMode(LineBreaker.JUSTIFICATION_MODE_INTER_WORD)
             }.build()
 
     private fun paint(size: Float, bold: Boolean = false, color: Int = Color.BLACK) = TextPaint(TextPaint.ANTI_ALIAS_FLAG).apply {
