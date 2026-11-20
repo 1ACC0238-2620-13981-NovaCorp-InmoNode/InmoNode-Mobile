@@ -77,6 +77,14 @@ class VoucherTextParserTest {
         assertNull(VoucherTextParser.parse("Cuenta 191-0488\n15.11.2026", null).amount)
     }
 
+    @Test fun datesWithTheMonthInLettersAreRead() {
+        assertEquals("2026-11-19", VoucherTextParser.parse("19 nov. 2026| 02:32 p. m.", null).operationDate)
+        assertEquals("2026-09-05", VoucherTextParser.parse("5 de setiembre de 2026", null).operationDate)
+        assertEquals("2026-09-05", VoucherTextParser.parse("05 Sep 2026", null).operationDate)
+        assertNull(VoucherTextParser.parse("31 feb. 2026", null).operationDate)
+        assertEquals("2026-11-15", VoucherTextParser.parse("Fecha  15.11.2026\n1 dic 2026", null).operationDate)
+    }
+
     @Test fun anOperationCodeNeedsADigitOnTheRowOfItsLabel() {
         assertNull(VoucherTextParser.parse("Operación exitosa\nBuscar", null).operationCode)
         assertNull(VoucherTextParser.parse("Nro. de operación\nO Buscar\n03817425", null).operationCode)

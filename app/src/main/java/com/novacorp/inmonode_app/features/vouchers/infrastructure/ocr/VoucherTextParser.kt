@@ -45,10 +45,22 @@ internal object VoucherTextParser {
             listOf("uuuu-MM-dd", "dd/MM/uuuu", "dd-MM-uuuu", "dd.MM.uuuu").firstNotNullOfOrNull { pattern ->
                 runCatching { LocalDate.parse(value, DateTimeFormatter.ofPattern(pattern).withResolverStyle(ResolverStyle.STRICT)).toString() }.getOrNull()
             }
-        }
+        } ?: monthNameDate(text)
         val code = CODE.find(text)?.groupValues?.get(1)
         return OcrData(amount, currency, date, code, confidence)
     }
+
+    /** Wallets write the month in letters: "19 nov. 2026", "19 de noviembre de 2026", "5 Set 2026". */
+    private fun monthNameDate(text: String): String? {
+        val match = MONTH_NAME_DATE.find(text) ?: return null
+        val (day, month, year) = match.destructured
+        val number = MONTHS.indexOfFirst { month.lowercase().startsWith(it) }.let { if (it == MONTHS.lastIndex) 9 else it + 1 }
+        return runCatching { LocalDate.of(year.toInt(), number, day.toInt()).toString() }.getOrNull()
+    }
+
+    private val MONTHS = listOf("ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "set", "oct", "nov", "dic", "sep")
+    private val MONTH_NAME_DATE = Regex("\\b([0-9]{1,2})[ \\t]*(?:de[ \\t]+)?(ene|feb|mar|abr|may|jun|jul|ago|set|sep|oct|nov|dic)[a-zé]*\\.?" +
+        "[ \\t]*(?:de(?:l)?[ \\t]+)?([0-9]{4})\\b", RegexOption.IGNORE_CASE)
 
     private fun parseAmount(text: String): BigDecimal? {
         val raw = text.replace(" ", "")
