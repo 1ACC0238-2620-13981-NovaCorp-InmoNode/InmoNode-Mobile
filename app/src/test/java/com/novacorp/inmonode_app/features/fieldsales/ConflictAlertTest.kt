@@ -2,6 +2,8 @@ package com.novacorp.inmonode_app.features.fieldsales
 
 import com.novacorp.inmonode_app.features.fieldsales.domain.model.*
 import com.novacorp.inmonode_app.features.fieldsales.presentation.sync.SyncQueueUiState
+import com.novacorp.inmonode_app.features.vouchers.domain.Voucher
+import com.novacorp.inmonode_app.features.vouchers.domain.VoucherStatus
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import java.math.BigDecimal
@@ -23,5 +25,12 @@ class ConflictAlertTest {
     @Test fun aLotGoneFromTheCatalogStillHasALabelAndTheAmountIsKept() {
         assertEquals("#9", state.lotLabel(9))
         assertEquals("500.00", state.amountLabel(conflict(9)))
+    }
+
+    @Test fun theVoucherOfAConflictIsNotPendingUntilTheSeparationGetsANewLot() {
+        val voucher = Voucher("v", "r", "v.jpg", status = VoucherStatus.READY_TO_SYNC, capturedAt = "2026-11-18T12:00:00Z")
+        assertEquals(false, state.copy(reservations = listOf(conflict(2)), vouchers = listOf(voucher)).hasPending)
+        val synced = conflict(2).copy(status = ReservationStatus.SYNCED, conflictReason = null)
+        assertEquals(true, state.copy(reservations = listOf(synced), vouchers = listOf(voucher)).hasPending)
     }
 }

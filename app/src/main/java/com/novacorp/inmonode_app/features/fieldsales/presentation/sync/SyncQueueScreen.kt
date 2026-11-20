@@ -50,7 +50,10 @@ fun SyncQueueScreen(modifier:Modifier=Modifier,viewModel:SyncQueueViewModel=hilt
     Column(Modifier.padding(16.dp)) { Text(p.fullName,style=MaterialTheme.typography.titleMedium);Text(stringResource(R.string.prospect_pending)) } } }
    items(s.vouchers.filter { it.status!=VoucherStatus.SYNCED }.sortedBy { it.capturedAt },key={"voucher-"+it.id}) { v -> OutlinedCard {
     Column(Modifier.padding(16.dp)) { Text(stringResource(R.string.wizard_voucher),style=MaterialTheme.typography.titleMedium)
-     StatusChip(v.status.name);FieldError(v.errorMessage) } } }
+     // A voucher of a separation that lost its lot waits for the new lot instead of the next sync (US-12).
+     if(s.reservations.firstOrNull { it.id==v.reservationId }?.awaitsReassignment==true) Text(stringResource(R.string.voucher_awaits_lot))
+     else StatusChip(v.status.name)
+     FieldError(v.errorMessage) } } }
   }
   Box(Modifier.padding(16.dp)) { PrimaryButton(stringResource(R.string.sync_start),!s.syncing&&!s.offline,viewModel::synchronize) }
  }

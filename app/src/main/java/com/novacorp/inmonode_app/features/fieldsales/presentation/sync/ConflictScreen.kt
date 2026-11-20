@@ -38,6 +38,7 @@ fun ConflictScreen(modifier:Modifier=Modifier,viewModel:SyncQueueViewModel=hiltV
    DropdownMenu(expanded,{expanded=false}) { s.portfolio.projects.forEach { p -> DropdownMenuItem(text={Text(p.name)},onClick={projectId=p.id;selectedId=null;expanded=false}) } }
   }
   CadastralMapCanvas(project?.lots.orEmpty(),{it.isAvailable()},selectedId,Modifier.weight(1f).fillMaxWidth(),onSelect={selectedId=it})
+  if(project!=null&&project.lots.none { it.isAvailable() }) Text(stringResource(R.string.sync_reassign_none),style=MaterialTheme.typography.bodyMedium)
   selected?.let { Text("${it.code} · ${it.dimensions.area} m² · ${it.currency} ${it.price}") }
   FieldError(s.errorMessage)
   PrimaryButton(stringResource(R.string.field_confirm),selected!=null&&!s.working) { selected?.let { viewModel.reassign(it.id) } }

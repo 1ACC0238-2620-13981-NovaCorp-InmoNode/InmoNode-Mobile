@@ -146,6 +146,8 @@
         <item quantity="other">%d conflictos de lote por resolver</item>
     </plurals>
     <string name="sync_reassign">Reasignar lote</string>
+    <string name="sync_reassign_none">No hay lotes disponibles en este proyecto. Elige otro proyecto o actualiza el portafolio cuando haya conexión.</string>
+    <string name="voucher_awaits_lot">Se enviará cuando la separación tenga un nuevo lote.</string>
     <string name="sync_reassign_help">Se conservan los datos del prospecto, el monto inicial de %1$s y, si los hay, los términos negociados y el voucher. Elige otro lote disponible.</string>
     <string name="sync_conflict_unavailable">El lote %1$s ya no está disponible: otra operación lo tomó antes de que tu separación llegara al servidor. En el mapa quedó como no disponible.</string>
     <string name="sync_conflict_not_found">El lote %1$s ya no existe en el catálogo del proyecto.</string>

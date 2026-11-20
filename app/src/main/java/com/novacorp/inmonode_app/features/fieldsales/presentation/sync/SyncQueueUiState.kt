@@ -14,6 +14,10 @@ data class SyncQueueUiState(val reservations:List<Reservation> = emptyList(),val
  fun amountLabel(row:Reservation)=money(lot(row.lotId)?.currency,row.initialAmount).ifEmpty { row.initialAmount.setScale(2,java.math.RoundingMode.DOWN).toPlainString() }
  /** Records the next sync would send; a queued retry is only worth showing while some remain. */
  val hasPending:Boolean get()=reservations.any { it.status==ReservationStatus.PENDING_SYNC||it.status==ReservationStatus.FAILED }||
-  prospects.any { !it.synced }||vouchers.any { it.status==VoucherStatus.READY_TO_SYNC }
+  prospects.any { !it.synced }||vouchers.any { v -> v.status==VoucherStatus.READY_TO_SYNC&&reservations.any { it.id==v.reservationId&&it.status in UPLOADABLE } }
  val syncing:Boolean get()=working||background==BackgroundSyncState.Running
+ private companion object {
+  /** Drafts, conflicts and cancelled separations never upload their voucher, as in PendingSyncTrigger. */
+  val UPLOADABLE=setOf(ReservationStatus.PENDING_SYNC,ReservationStatus.FAILED,ReservationStatus.SYNCED)
+ }
 }
