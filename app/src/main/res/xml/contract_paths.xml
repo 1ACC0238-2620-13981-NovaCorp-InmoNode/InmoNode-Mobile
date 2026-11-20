@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Only the preliminary contract PDFs (US-13) can be shared; nothing else in the cache. -->
+<paths>
+    <cache-path name="contracts" path="contracts/" />
+</paths>

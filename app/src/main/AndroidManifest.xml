@@ -35,6 +35,17 @@
             </intent-filter>
         </activity>
 
+        <!-- Lets the agent share the preliminary contract PDF generated on the device (US-13). -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.contracts"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/contract_paths" />
+        </provider>
+
         <!-- WorkManager is initialized on demand by InmoNodeApplication, with the Hilt worker factory. -->
         <provider
             android:name="androidx.startup.InitializationProvider"

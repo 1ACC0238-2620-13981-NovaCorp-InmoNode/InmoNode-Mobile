@@ -19,6 +19,7 @@ class FieldPresentationTest {
  private val lot=Lot(1,1,"A-1",LotDimensions(BigDecimal.TEN,BigDecimal.TEN,BigDecimal("100")),emptyList(),BigDecimal("10000"),"PEN",LotStatus.AVAILABLE)
  private val project=Project(1,"Proyecto","Lima",null,null,null,FinancingRules(BigDecimal("20"),BigDecimal.ZERO,120,BigDecimal.ZERO),listOf(lot))
  private val person=Prospect("person","12345678","Nombre","","Soltero(a)","2026-10-01T00:00:00.000Z")
+ private val contracts=ContractDocumentsFake()
  private inner class PortfolioFake:PortfolioRepository {
   val state=MutableStateFlow(Portfolio(listOf(project),"2026-10-01",null))
   override fun observePortfolio():Flow<Portfolio> = state
@@ -44,7 +45,8 @@ class FieldPresentationTest {
   override suspend fun reassign(reservationId:String,newLotId:Long):Result<Reservation> = Result.failure(IllegalStateException())
  }
  private fun wizard(p:PortfolioRepository,people:ProspectRepository,rows:ReservationRepository,saved:SavedStateHandle)=
-  ReservationWizardViewModel(p,people,rows,BeginReservationUseCase(rows),ReserveLotUseCase(rows),CancelReservationDraftUseCase(rows,VoucherRepositoryFake()),CompleteProspectUseCase(people),saved)
+  ReservationWizardViewModel(p,people,rows,BeginReservationUseCase(rows),ReserveLotUseCase(rows),CancelReservationDraftUseCase(rows,VoucherRepositoryFake(),ContractDocumentsFake()),CompleteProspectUseCase(people),
+  PreviewContractUseCase(contracts),saved)
  @Test fun doubleTapCreatesOnlyOneDurableDraft()=runTest {
   Dispatchers.setMain(StandardTestDispatcher(testScheduler))
   try { val rows=ReservationsFake().apply { gate=CompletableDeferred() }
@@ -115,6 +117,36 @@ class FieldPresentationTest {
    runCurrent();vm.amount("2000");vm.months("24");vm.calculate();assertNotNull(vm.uiState.value.result)
    portfolio.state.value=Portfolio(emptyList(),"2026-10-02",null);runCurrent()
    assertNull(vm.uiState.value.lot);assertNull(vm.uiState.value.result);vm.viewModelScope.cancel()
+  } finally { Dispatchers.resetMain() }
+ }
+ private inner class MaritalPeople:ProspectRepository {
+  val state=MutableStateFlow(listOf(person.copy(maritalStatus=null)))
+  override fun observeProspects():Flow<List<Prospect>> = state
+  override suspend fun register(document:String,fullName:String,phone:String,maritalStatus:String?)=Result.success(person)
+  override suspend fun completeMaritalStatus(prospectId:String,maritalStatus:String):Result<Prospect> {
+   state.value=listOf(person.copy(maritalStatus=maritalStatus));return Result.success(state.value[0]) }
+ }
+ private fun storedDraft()=ReservationsFake().apply {
+  state.value=listOf(Reservation("draft",1,"person",BigDecimal("500"),"2026-10-01T00:00:00Z",ReservationStatus.DRAFT)) }
+ @Test fun contractIsGeneratedOnlyOnceTheContractStepAsksForIt()=runTest {
+  Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+  try { val vm=wizard(PortfolioFake(),PeopleFake(),storedDraft(),SavedStateHandle(mapOf("reservationId" to "draft")))
+   runCurrent();assertNull(vm.uiState.value.contract);assertTrue(contracts.rendered.isEmpty())
+   vm.previewContract();runCurrent()
+   assertEquals(listOf("draft"),contracts.rendered)
+   assertEquals("1",(vm.uiState.value.contract as ContractPreview.Ready).templateVersion)
+   vm.viewModelScope.cancel()
+  } finally { Dispatchers.resetMain() }
+ }
+ @Test fun missingMaritalStatusBlocksTheContractUntilTheAgentCompletesIt()=runTest {
+  Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+  try { val vm=wizard(PortfolioFake(),MaritalPeople(),storedDraft(),SavedStateHandle(mapOf("reservationId" to "draft")))
+   vm.previewContract();runCurrent()
+   assertEquals(ContractPreview.Missing(listOf(ContractField.MARITAL_STATUS)),vm.uiState.value.contract)
+   assertTrue(contracts.rendered.isEmpty())
+   vm.completeMarital("Casado(a)");runCurrent()
+   assertTrue(vm.uiState.value.contract is ContractPreview.Ready);assertEquals(listOf("draft"),contracts.rendered)
+   vm.viewModelScope.cancel()
   } finally { Dispatchers.resetMain() }
  }
 }
