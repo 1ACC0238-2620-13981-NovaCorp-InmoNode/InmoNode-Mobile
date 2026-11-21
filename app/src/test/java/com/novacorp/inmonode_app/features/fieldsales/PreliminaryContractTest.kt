@@ -25,8 +25,8 @@ class PreliminaryContractTest {
         assertEquals("1", template.version)
         assertEquals(8, filled.sections.size)
         assertFalse(text.contains("{{"))
-        listOf("Prueba Sync T59", "59000059", "casado(a)", "N-02", "135.00 m²", "PEN 50500.00", "PEN 50000.00",
-            "Cerco perimétrico", "PEN 500.00", "12.5 %", "120 meses").forEach { assertTrue(it, text.contains(it)) }
+        listOf("Prueba Sync T59", "59000059", "casado(a)", "N-02", "135.00 m²", "S/ 50,500.00", "S/ 50,000.00",
+            "Cerco perimétrico", "S/ 500.00", "12.5 %", "120 meses").forEach { assertTrue(it, text.contains(it)) }
     }
 
     @Test fun separationDateIsTheAgentsLocalDay() {
@@ -37,7 +37,7 @@ class PreliminaryContractTest {
     @Test fun termsNotAgreedUseNeutralWording() {
         val values = contract.copy(reservation = reservation.copy(terms = NegotiationTerms())).values(lima)
         assertEquals("no aplica", values["terms.discount"])
-        assertEquals("PEN 50500.00", values["price.final"])
+        assertEquals("S/ 50,500.00", values["price.final"])
         assertEquals("ninguno", values["terms.bonus"])
         assertEquals("No se pactaron condiciones adicionales.", values["terms.notes"])
     }

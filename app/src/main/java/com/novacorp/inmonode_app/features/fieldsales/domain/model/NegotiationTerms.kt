@@ -1,5 +1,6 @@
 package com.novacorp.inmonode_app.features.fieldsales.domain.model
 
+import com.novacorp.inmonode_app.core.format.formatMoney
 import java.math.BigDecimal
 import java.math.RoundingMode
 
@@ -14,7 +15,7 @@ data class NegotiationTerms(val discount: BigDecimal? = null, val bonus: String?
     /** Null when the terms are valid for a lot of [lotPrice]; otherwise the message that tells the agent the valid range. */
     fun validationError(lotPrice: BigDecimal, currency: String): String? = when {
         discount != null && (discount < BigDecimal.ZERO || discount >= lotPrice) ->
-            "El descuento debe estar entre $currency 0.00 y $currency ${maxDiscount(lotPrice)}."
+            "El descuento debe estar entre ${formatMoney(currency, BigDecimal.ZERO)} y ${formatMoney(currency, maxDiscount(lotPrice))}."
         discount != null && discount.stripTrailingZeros().scale() > 2 -> "El descuento debe tener como máximo dos decimales."
         (bonus?.length ?: 0) > MAX_BONUS_LENGTH -> "El bono debe tener como máximo $MAX_BONUS_LENGTH caracteres."
         (notes?.length ?: 0) > MAX_NOTES_LENGTH -> "Las observaciones deben tener como máximo $MAX_NOTES_LENGTH caracteres."

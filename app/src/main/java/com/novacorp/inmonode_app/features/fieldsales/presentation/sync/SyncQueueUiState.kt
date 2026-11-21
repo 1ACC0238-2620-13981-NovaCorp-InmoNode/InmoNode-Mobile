@@ -1,4 +1,6 @@
 package com.novacorp.inmonode_app.features.fieldsales.presentation.sync
+
+import com.novacorp.inmonode_app.core.format.formatAmount
 import com.novacorp.inmonode_app.features.fieldsales.application.BackgroundSyncState
 import com.novacorp.inmonode_app.features.fieldsales.domain.model.*
 import com.novacorp.inmonode_app.features.fieldsales.presentation.reservation.money
@@ -11,7 +13,7 @@ data class SyncQueueUiState(val reservations:List<Reservation> = emptyList(),val
  fun lot(id:Long)=portfolio.projects.flatMap { it.lots }.firstOrNull { it.id==id }
  /** A lot missing from the catalog (LOT_NOT_FOUND) is named by its id. */
  fun lotLabel(id:Long)=lot(id)?.code?:"#$id"
- fun amountLabel(row:Reservation)=money(lot(row.lotId)?.currency,row.initialAmount).ifEmpty { row.initialAmount.setScale(2,java.math.RoundingMode.DOWN).toPlainString() }
+ fun amountLabel(row:Reservation)=money(lot(row.lotId)?.currency,row.initialAmount).ifEmpty { formatAmount(row.initialAmount) }
  /** Records the next sync would send; a queued retry is only worth showing while some remain. */
  val hasPending:Boolean get()=reservations.any { it.status==ReservationStatus.PENDING_SYNC||it.status==ReservationStatus.FAILED }||
   prospects.any { !it.synced }||vouchers.any { v -> v.status==VoucherStatus.READY_TO_SYNC&&reservations.any { it.id==v.reservationId&&it.status in UPLOADABLE } }

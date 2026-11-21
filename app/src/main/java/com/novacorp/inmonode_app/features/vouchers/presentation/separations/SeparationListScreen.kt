@@ -1,4 +1,7 @@
 package com.novacorp.inmonode_app.features.vouchers.presentation.separations
+
+import com.novacorp.inmonode_app.core.format.formatMoney
+import com.novacorp.inmonode_app.core.format.formatAmount
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -27,7 +30,7 @@ fun SeparationListScreen(modifier:Modifier=Modifier,viewModel:SeparationsViewMod
    items(s.reservations,key={it.id}) { row -> OutlinedCard(onClick={onDetail(row.id)},modifier=Modifier.fillMaxWidth()) {
     Column(Modifier.padding(16.dp),verticalArrangement=Arrangement.spacedBy(8.dp)) {
      Text(s.lot(row.lotId)?.code?:row.lotId.toString(),style=MaterialTheme.typography.headlineSmall)
-     Text("${s.prospects.firstOrNull { it.id==row.prospectId }?.fullName.orEmpty()} · ${row.initialAmount}")
+     Text("${s.prospects.firstOrNull { it.id==row.prospectId }?.fullName.orEmpty()} · ${s.lot(row.lotId)?.let { formatMoney(it.currency,row.initialAmount) }?:formatAmount(row.initialAmount)}")
      StatusChip(s.summaries[row.id]?.status?:row.serverStatus?:row.status.name)
      // Only the pending ones are flagged in the list; the detail shows every state.
      s.identityDocumentState(row)?.takeIf { it==IdentityDocumentState.PENDING }?.let { IdentityDocumentLabel(it) }

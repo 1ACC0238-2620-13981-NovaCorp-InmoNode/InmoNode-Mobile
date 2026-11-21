@@ -1,5 +1,6 @@
 package com.novacorp.inmonode_app.features.fieldsales.infrastructure.repositories
 
+import com.novacorp.inmonode_app.core.format.formatMoney
 import com.novacorp.inmonode_app.core.database.InmoNodeDatabase
 import com.novacorp.inmonode_app.core.database.atomic
 import com.novacorp.inmonode_app.core.network.operationResult
@@ -11,7 +12,6 @@ import com.novacorp.inmonode_app.features.iam.infrastructure.local.FieldSession
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
 import java.math.BigDecimal
-import java.math.RoundingMode
 import com.novacorp.inmonode_app.core.time.utcTimestamp
 import java.util.UUID
 import javax.inject.Inject
@@ -62,7 +62,7 @@ class ReservationRepositoryImpl @Inject constructor(private val database: InmoNo
         terms.validationError(price, lot.currency)?.let { throw IllegalArgumentException(it) }
         val finalPrice = terms.finalPrice(price)
         require(amount > BigDecimal.ZERO && amount <= finalPrice) {
-            "El monto debe ser positivo y no superar el precio final del lote (${lot.currency} ${finalPrice.setScale(2, RoundingMode.DOWN)})."
+            "El monto debe ser positivo y no superar el precio final del lote (${formatMoney(lot.currency, finalPrice)})."
         }
         require(amount.stripTrailingZeros().scale() <= 2) { "El monto debe tener como máximo dos decimales." }
         // The reservation endpoint validates a positive separation amount; financing minimums apply to simulation only.

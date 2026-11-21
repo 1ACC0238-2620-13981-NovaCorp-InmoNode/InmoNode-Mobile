@@ -1,4 +1,6 @@
 package com.novacorp.inmonode_app.features.fieldsales.presentation.map.components
+
+import com.novacorp.inmonode_app.core.format.formatMoney
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -19,7 +21,7 @@ fun LotDetailSheet(lot: Lot, onDismiss: () -> Unit, onSimulate: () -> Unit, onRe
             // An irregular lot has no single front or depth: only what the plan gives is shown.
             lot.dimensions.front?.let { FieldValue(stringResource(R.string.lot_front), "$it m") }
             lot.dimensions.depth?.let { FieldValue(stringResource(R.string.lot_depth), "$it m") }
-            FieldValue(stringResource(R.string.lot_price), "${lot.currency} ${lot.price}")
+            FieldValue(stringResource(R.string.lot_price), formatMoney(lot.currency,lot.price))
             SecondaryButton(stringResource(R.string.lot_simulate),onClick=onSimulate)
             PrimaryButton(stringResource(R.string.lot_reserve),lot.isAvailable(),onReserve)
         }

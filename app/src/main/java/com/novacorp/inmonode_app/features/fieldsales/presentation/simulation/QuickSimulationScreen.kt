@@ -1,4 +1,6 @@
 package com.novacorp.inmonode_app.features.fieldsales.presentation.simulation
+
+import com.novacorp.inmonode_app.core.format.formatMoney
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -19,7 +21,7 @@ fun QuickSimulationScreen(modifier:Modifier=Modifier,viewModel:QuickSimulationVi
   Spacer(Modifier.height(16.dp))
  }) {
   s.lot?.let { lot -> Text("${lot.code} · ${s.project?.name}",style=MaterialTheme.typography.titleMedium)
-   FieldValue(stringResource(R.string.lot_price),"${lot.currency} ${lot.price}") }
+   FieldValue(stringResource(R.string.lot_price),formatMoney(lot.currency,lot.price)) }
   OutlinedTextField(s.amount,viewModel::amount,label={Text(stringResource(R.string.field_amount))},modifier=Modifier.fillMaxWidth(),keyboardOptions=androidx.compose.foundation.text.KeyboardOptions(keyboardType=androidx.compose.ui.text.input.KeyboardType.Decimal),singleLine=true,shape=androidx.compose.foundation.shape.RoundedCornerShape(8.dp))
   OutlinedTextField(s.months,viewModel::months,label={Text(stringResource(R.string.simulation_months))},modifier=Modifier.fillMaxWidth(),keyboardOptions=androidx.compose.foundation.text.KeyboardOptions(keyboardType=androidx.compose.ui.text.input.KeyboardType.Number),singleLine=true,shape=androidx.compose.foundation.shape.RoundedCornerShape(8.dp))
   s.project?.financingRules?.let { rules ->
@@ -29,10 +31,10 @@ fun QuickSimulationScreen(modifier:Modifier=Modifier,viewModel:QuickSimulationVi
   }
   FieldError(s.errorMessage)
   PrimaryButton(stringResource(R.string.simulation_calculate),s.lot!=null,viewModel::calculate)
-  s.result?.let { result -> OutlinedCard { Column(Modifier.padding(16.dp),verticalArrangement=Arrangement.spacedBy(16.dp)) {
-   Text(stringResource(R.string.simulation_monthly));Text("${s.lot?.currency} ${result.monthlyPayment}",style=MaterialTheme.typography.headlineMedium)
-   FieldValue(stringResource(R.string.simulation_financed),result.financedAmount.toPlainString())
-   FieldValue(stringResource(R.string.simulation_interest),result.totalInterest.toPlainString())
+  s.result?.let { result -> val currency=s.lot?.currency.orEmpty(); OutlinedCard { Column(Modifier.padding(16.dp),verticalArrangement=Arrangement.spacedBy(16.dp)) {
+   Text(stringResource(R.string.simulation_monthly));Text(formatMoney(currency,result.monthlyPayment),style=MaterialTheme.typography.headlineMedium)
+   FieldValue(stringResource(R.string.simulation_financed),formatMoney(currency,result.financedAmount))
+   FieldValue(stringResource(R.string.simulation_interest),formatMoney(currency,result.totalInterest))
   } } }
 
  }

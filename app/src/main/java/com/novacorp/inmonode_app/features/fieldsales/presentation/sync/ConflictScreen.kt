@@ -1,4 +1,6 @@
 package com.novacorp.inmonode_app.features.fieldsales.presentation.sync
+
+import com.novacorp.inmonode_app.core.format.formatMoney
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -35,7 +37,7 @@ fun ConflictScreen(modifier:Modifier=Modifier,viewModel:SyncQueueViewModel=hiltV
   FieldDropdown(stringResource(R.string.field_project),project?.name.orEmpty(),s.portfolio.projects,{ it.name },{ projectId=it.id;selectedId=null })
   CadastralMapCanvas(project?.lots.orEmpty(),{it.isAvailable()},selectedId,Modifier.weight(1f).fillMaxWidth(),onSelect={selectedId=it})
   if(project!=null&&project.lots.none { it.isAvailable() }) Text(stringResource(R.string.sync_reassign_none),style=MaterialTheme.typography.bodyMedium)
-  selected?.let { Text("${it.code} · ${it.dimensions.area} m² · ${it.currency} ${it.price}") }
+  selected?.let { Text("${it.code} · ${it.dimensions.area} m² · ${formatMoney(it.currency,it.price)}") }
   FieldError(s.errorMessage)
   PrimaryButton(stringResource(R.string.field_confirm),selected!=null&&!s.working) { selected?.let { viewModel.reassign(it.id) } }
  }

@@ -191,11 +191,11 @@ class FieldPersistenceTest {
         portfolio.download().getOrThrow()
         val prospect = prospects.register("12345678", "Ana Pérez", "", "Soltera").getOrThrow()
         val tooHigh = reservations.createDraft(10, prospect.id, BigDecimal("200"), NegotiationTerms(BigDecimal("1000")))
-        assertEquals("El descuento debe estar entre PEN 0.00 y PEN 999.99.", tooHigh.exceptionOrNull()?.message)
+        assertEquals("El descuento debe estar entre S/ 0.00 y S/ 999.99.", tooHigh.exceptionOrNull()?.message)
         val negative = reservations.createDraft(10, prospect.id, BigDecimal("200"), NegotiationTerms(BigDecimal("-1")))
         assertTrue(negative.isFailure)
         val aboveFinal = reservations.createDraft(10, prospect.id, BigDecimal("901"), NegotiationTerms(BigDecimal("100")))
-        assertEquals("El monto debe ser positivo y no superar el precio final del lote (PEN 900.00).", aboveFinal.exceptionOrNull()?.message)
+        assertEquals("El monto debe ser positivo y no superar el precio final del lote (S/ 900.00).", aboveFinal.exceptionOrNull()?.message)
         assertTrue(reservations.observeReservations().first().isEmpty())
     }
 
