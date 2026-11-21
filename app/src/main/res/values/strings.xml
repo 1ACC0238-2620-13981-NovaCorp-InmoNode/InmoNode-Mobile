@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">InmoNode-App</string>
+    <string name="app_name">InmoNode</string>
     <string name="coming_soon_message">En construcción. Esta pantalla llega con %1$s.</string>
 
     <!-- Bottom navigation -->
