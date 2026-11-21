@@ -22,7 +22,8 @@ fun FieldPage(title: String, modifier: Modifier = Modifier, onBack: (() -> Unit)
     actions: @Composable ColumnScope.() -> Unit = {}, topActions: @Composable RowScope.() -> Unit = {},
     content: @Composable ColumnScope.() -> Unit) {
     Column(modifier.fillMaxSize().imePadding()) {
-        Surface(color = MaterialTheme.colorScheme.surface) {
+        // A page without "back" is a top-level step (M04, M23): its large title sits on the page, like the tab screens.
+        Surface(color = if (onBack == null) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.surface) {
             Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp),
                 verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                 if (onBack != null) IconButton(onClick = onBack) {
