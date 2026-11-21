@@ -63,9 +63,14 @@ class ContractPreviewScreenTest {
         override suspend fun getPaymentEvidences(reservationId: String) = error("unused")
         override suspend fun discardCancelled() = Result.success(Unit)
     }
+    private val identityDocuments = object : IdentityDocumentRepository {
+        override fun observeDocuments() = flowOf(emptyList<IdentityDocument>())
+        override suspend fun capture(reservationId: String, imagePath: String) = error("unused")
+        override suspend fun discardCancelled() = Result.success(Unit)
+    }
 
     private fun viewModel() = ReservationWizardViewModel(portfolio, prospects, reservations, BeginReservationUseCase(reservations),
-        ReserveLotUseCase(reservations), CancelReservationDraftUseCase(reservations, vouchers, documents), CompleteProspectUseCase(prospects),
+        ReserveLotUseCase(reservations), CancelReservationDraftUseCase(reservations, vouchers, identityDocuments, documents), CompleteProspectUseCase(prospects),
         PreviewContractUseCase(documents), SavedStateHandle(mapOf("reservationId" to ID)))
 
     @After fun deleteThePdf() = runBlocking { documents.delete(ID) }

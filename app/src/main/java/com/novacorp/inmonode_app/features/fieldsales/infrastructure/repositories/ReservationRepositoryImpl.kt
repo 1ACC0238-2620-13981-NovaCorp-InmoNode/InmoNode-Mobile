@@ -82,6 +82,8 @@ class ReservationRepositoryImpl @Inject constructor(private val database: InmoNo
             val replacement = create(owner, newLotId, original.prospectId, original.initialAmount.toBigDecimal(),
                 "PENDING_SYNC", original.toDomain().terms)
             database.voucherDao().reassign(owner, original.id, replacement.id)
+            // A conflict never sends its identity document either, so the buyer's photo moves with the voucher.
+            database.identityDocumentDao().reassign(owner, original.id, replacement.id)
             dao.upsert(original.copy(conflictReason = Reservation.REASSIGNED))
             replacement.toDomain()
         }
