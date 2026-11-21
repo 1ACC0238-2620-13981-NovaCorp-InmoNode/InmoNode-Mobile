@@ -10,7 +10,7 @@ import androidx.compose.ui.unit.dp
 import com.novacorp.inmonode_app.R
 @Composable
 fun WizardStepper(step:Int) {
- val names=listOf(R.string.wizard_prospect,R.string.wizard_voucher,R.string.wizard_ocr,R.string.wizard_contract)
+ val names=listOf(R.string.wizard_prospect,R.string.wizard_voucher,R.string.wizard_ocr,R.string.wizard_identity,R.string.wizard_contract)
  Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween) {
   names.forEachIndexed { index,label -> Column(horizontalAlignment=Alignment.CenterHorizontally) {
    Surface(shape=CircleShape,color=if(index+1<=step)MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
