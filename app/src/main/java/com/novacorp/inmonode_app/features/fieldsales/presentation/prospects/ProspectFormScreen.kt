@@ -30,10 +30,5 @@ fun ProspectFormScreen(modifier:Modifier=Modifier,viewModel:ProspectsViewModel=h
 }
 @Composable
 fun MaritalStatusField(value:String,onChange:(String)->Unit) {
- var expanded by remember { mutableStateOf(false) }
- Box {
-  OutlinedButton(onClick={expanded=true},modifier=Modifier.fillMaxWidth()) { Text(value.ifBlank { stringResource(R.string.field_marital) }) }
-  DropdownMenu(expanded,{expanded=false}) { listOf("Soltero(a)","Casado(a)","Divorciado(a)","Viudo(a)").forEach { label ->
-   DropdownMenuItem(text={Text(label)},onClick={onChange(label);expanded=false}) } }
- }
+ FieldDropdown(stringResource(R.string.field_marital),value,listOf("Soltero(a)","Casado(a)","Divorciado(a)","Viudo(a)"),{ it },onChange)
 }

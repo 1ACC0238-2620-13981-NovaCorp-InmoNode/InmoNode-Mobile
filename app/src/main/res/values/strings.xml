@@ -81,7 +81,7 @@
     <string name="map_no_results">Sin resultados para estos filtros</string>
     <string name="map_no_results_help">Ajusta el metraje o limpia los filtros para ver otros lotes.</string>
     <string name="map_download">Descargar portafolio</string>
-    <string name="map_select_project">Seleccionar proyecto</string>
+    <string name="field_project">Proyecto</string>
     <string name="map_center">Centrar mapa</string>
     <string name="lot_reserve">Separar lote</string>
     <string name="lot_simulate">Simular financiamiento</string>

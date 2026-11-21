@@ -6,6 +6,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -43,6 +47,27 @@ fun FieldError(message: String?) {
     if (message != null) Surface(color = MaterialTheme.colorScheme.errorContainer,
         shape = RoundedCornerShape(8.dp), modifier = Modifier.fillMaxWidth()) {
         Text(message, modifier = Modifier.padding(16.dp), color = MaterialTheme.colorScheme.onErrorContainer)
+    }
+}
+/** Exposed dropdown menu (style guide, M06, M13): a read-only outlined field with an arrow that lists the options. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun <T> FieldDropdown(label: String, value: String, options: List<T>, optionLabel: (T) -> String,
+    onSelect: (T) -> Unit, modifier: Modifier = Modifier, supportingText: String? = null) {
+    var expanded by remember { mutableStateOf(false) }
+    ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }, modifier = modifier.fillMaxWidth()) {
+        OutlinedTextField(value = value, onValueChange = {}, readOnly = true, singleLine = true,
+            label = { Text(label) },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            supportingText = supportingText?.let { text -> { Text(text) } },
+            shape = RoundedCornerShape(8.dp),
+            modifier = Modifier.fillMaxWidth().menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable))
+        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            options.forEach { option ->
+                DropdownMenuItem(text = { Text(optionLabel(option)) }, onClick = { onSelect(option); expanded = false },
+                    contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding)
+            }
+        }
     }
 }
 @Composable
