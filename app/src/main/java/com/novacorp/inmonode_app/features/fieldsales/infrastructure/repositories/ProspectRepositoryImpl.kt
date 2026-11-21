@@ -28,7 +28,7 @@ class ProspectRepositoryImpl @Inject constructor(private val database: InmoNodeD
         require(maritalStatus in listOf("Soltero(a)", "Casado(a)", "Divorciado(a)", "Viudo(a)")) { "Selecciona un estado civil válido." }
         // Contract-only information: the backend prospect contract has no marital-status field.
         database.atomic {
-            val row = requireNotNull(dao.find(owner, prospectId)) { "No se encontr? el prospecto." }
+            val row = requireNotNull(dao.find(owner, prospectId)) { "No se encontró el prospecto." }
             row.copy(maritalStatus = maritalStatus).also { dao.upsert(it) }.toDomain()
         }
     }
