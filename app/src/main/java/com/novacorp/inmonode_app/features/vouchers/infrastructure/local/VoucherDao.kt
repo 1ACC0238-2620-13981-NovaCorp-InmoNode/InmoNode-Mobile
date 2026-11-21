@@ -15,6 +15,8 @@ interface VoucherDao {
     suspend fun pending(ownerId: Long): List<VoucherEntity>
     @Query("SELECT * FROM vouchers WHERE ownerId = :ownerId AND reservationId = :reservationId AND status = 'READY_TO_SYNC'")
     suspend fun readyForReservation(ownerId: Long, reservationId: String): List<VoucherEntity>
+    @Query("SELECT * FROM vouchers WHERE ownerId = :ownerId AND reservationId = :reservationId AND status = 'RECAPTURE_REQUIRED'")
+    suspend fun illegibleForReservation(ownerId: Long, reservationId: String): List<VoucherEntity>
     @Upsert suspend fun upsert(voucher: VoucherEntity)
     @Query("""SELECT vouchers.* FROM vouchers INNER JOIN reservations
         ON reservations.ownerId = vouchers.ownerId AND reservations.id = vouchers.reservationId
