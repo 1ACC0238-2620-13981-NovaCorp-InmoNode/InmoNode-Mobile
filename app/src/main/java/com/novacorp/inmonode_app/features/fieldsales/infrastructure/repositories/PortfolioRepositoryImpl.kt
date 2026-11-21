@@ -48,9 +48,14 @@ class PortfolioRepositoryImpl @Inject constructor(
                 check(metadata?.downloadedAt != null) { "El servidor indicó 304 sin un portafolio local." }
             } else {
                 val portfolio = response.requireBody()
-                portfolio.validate()
-                val projectRows = portfolio.projects.map { it.toEntity(owner) }
-                val lotRows = portfolio.projects.flatMap { project -> project.lots.features.map { it.toEntity(owner, project.id) } }
+                // A catalog the app cannot use is never stored; the agent is told why, not shown the exception.
+                val (projectRows, lotRows) = try {
+                    portfolio.validate()
+                    portfolio.projects.map { it.toEntity(owner) } to
+                        portfolio.projects.flatMap { project -> project.lots.features.map { it.toEntity(owner, project.id) } }
+                } catch (unusable: RuntimeException) {
+                    throw UnusablePortfolioException(unusable)
+                }
                 session.requireUnchanged(owner)
                 database.atomic {
                     lots.deletePortfolioLots(owner)
@@ -64,5 +69,13 @@ class PortfolioRepositoryImpl @Inject constructor(
             session.requireUnchanged(owner)
             observe(owner).first()
         }
+    }
+}
+
+/** The downloaded catalog has data the app cannot use; the cause keeps the technical detail. */
+class UnusablePortfolioException(cause: Throwable) : IllegalStateException(MESSAGE, cause) {
+    companion object {
+        const val MESSAGE = "El catálogo recibido tiene datos que la app no puede usar, así que no se guardó. " +
+            "Si ya tenías uno, sigues trabajando con él. Avisa al administrador del catálogo."
     }
 }

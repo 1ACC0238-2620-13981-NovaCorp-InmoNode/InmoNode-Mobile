@@ -3,6 +3,7 @@ package com.novacorp.inmonode_app.features.fieldsales.infrastructure.local
 import androidx.room3.Entity
 import androidx.room3.Index
 
+/** [front] and [depth] are empty when the plan does not give them (see [LotDimensions][com.novacorp.inmonode_app.features.fieldsales.domain.model.LotDimensions]). */
 @Entity(tableName = "lots", primaryKeys = ["ownerId", "id"], indices = [Index(value = ["ownerId", "projectId"])])
 data class LotEntity(val ownerId: Long, val id: Long, val projectId: Long, val code: String,
     val front: String, val depth: String, val area: String, val price: String,

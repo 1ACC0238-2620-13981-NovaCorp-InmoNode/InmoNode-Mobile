@@ -73,8 +73,8 @@ fun CadastralMapCanvas(lots: List<Lot>, matches: (Lot) -> Boolean, selectedId: L
                 else -> AlertYellow }
             drawPath(path,color); drawPath(path,if(lot.id==selectedId) ForestGreen else Color.White,
                 style=Stroke(if(lot.id==selectedId) 4.dp.toPx() else 1.5.dp.toPx()))
-            rings.firstOrNull()?.takeIf { it.isNotEmpty() }?.let { ring ->
-                val center=Offset(ring.map { it.x }.average().toFloat(),ring.map { it.y }.average().toFloat())
+            lot.polygon.firstOrNull()?.takeIf { it.isNotEmpty() }?.let { ring ->
+                val center=project(labelPoint(ring),size.width,size.height)
                 val text=measurer.measure(lot.code,TextStyle(fontFamily=Montserrat,fontSize=10.sp,
                     color=if(color==TerracottaOrange) Color.White else PureBlack))
                 drawText(text,topLeft=center-Offset(text.size.width/2f,text.size.height/2f))
