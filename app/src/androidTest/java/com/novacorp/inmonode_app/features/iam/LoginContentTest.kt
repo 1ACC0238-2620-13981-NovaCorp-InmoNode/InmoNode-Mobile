@@ -38,9 +38,9 @@ class LoginContentTest {
 
     @Test fun loadingDisablesEditableFieldsAndSubmit() {
         render(LoginUiState(email = "agent@example.test", password = "synthetic-password", isLoading = true))
-        compose.onAllNodes(hasSetTextAction()).assertCountEquals(2)
-        compose.onAllNodes(hasSetTextAction())[0].assertIsNotEnabled()
-        compose.onAllNodes(hasSetTextAction())[1].assertIsNotEnabled()
+        // Found by their description: a disabled field no longer exposes SetText in current Compose versions.
+        compose.onNodeWithContentDescription("Correo electrónico").assertIsNotEnabled()
+        compose.onNodeWithContentDescription("Contraseña").assertIsNotEnabled()
         compose.onNodeWithContentDescription("Mostrar contraseña").assertIsNotEnabled()
         val buttons = compose.onAllNodes(SemanticsMatcher.expectValue(SemanticsProperties.Role, androidx.compose.ui.semantics.Role.Button))
         buttons.assertCountEquals(2)

@@ -20,20 +20,22 @@ fun ProspectFormScreen(modifier:Modifier=Modifier,viewModel:ProspectsViewModel=h
   Spacer(Modifier.height(16.dp))
  }) {
   OfflineBanner(s.offline)
-  OutlinedTextField(s.name,viewModel::name,label={Text(stringResource(R.string.field_name))},modifier=Modifier.fillMaxWidth(),singleLine=true,shape=androidx.compose.foundation.shape.RoundedCornerShape(8.dp))
-  OutlinedTextField(s.document,viewModel::document,label={Text(stringResource(R.string.field_document))},modifier=Modifier.fillMaxWidth(),singleLine=true,shape=androidx.compose.foundation.shape.RoundedCornerShape(8.dp))
-  OutlinedTextField(s.phone,viewModel::phone,label={Text(stringResource(R.string.field_phone))},modifier=Modifier.fillMaxWidth(),keyboardOptions=androidx.compose.foundation.text.KeyboardOptions(keyboardType=androidx.compose.ui.text.input.KeyboardType.Phone),singleLine=true,shape=androidx.compose.foundation.shape.RoundedCornerShape(8.dp))
-  MaritalStatusField(s.maritalStatus,viewModel::marital)
+  OutlinedTextField(s.name,viewModel::name,label={Text(required(R.string.field_name))},modifier=Modifier.fillMaxWidth(),singleLine=true,shape=androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
+   isError=s.nameError!=null,supportingText=s.nameError?.let { error -> { Text(error) } })
+  OutlinedTextField(s.document,viewModel::document,label={Text(required(R.string.field_document))},modifier=Modifier.fillMaxWidth(),singleLine=true,shape=androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
+   isError=s.documentError!=null,supportingText={ Text(s.documentError?:stringResource(R.string.prospect_document_help)) })
+  OutlinedTextField(s.phone,viewModel::phone,label={Text(stringResource(R.string.field_phone))},modifier=Modifier.fillMaxWidth(),keyboardOptions=androidx.compose.foundation.text.KeyboardOptions(keyboardType=androidx.compose.ui.text.input.KeyboardType.Phone),singleLine=true,shape=androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
+   isError=s.phoneError!=null,supportingText={ Text(s.phoneError?:stringResource(R.string.field_optional)) })
+  MaritalStatusField(s.maritalStatus,viewModel::marital,stringResource(R.string.prospect_marital_help))
   FieldError(s.errorMessage)
 
  }
 }
 @Composable
-fun MaritalStatusField(value:String,onChange:(String)->Unit) {
- var expanded by remember { mutableStateOf(false) }
- Box {
-  OutlinedButton(onClick={expanded=true},modifier=Modifier.fillMaxWidth()) { Text(value.ifBlank { stringResource(R.string.field_marital) }) }
-  DropdownMenu(expanded,{expanded=false}) { listOf("Soltero(a)","Casado(a)","Divorciado(a)","Viudo(a)").forEach { label ->
-   DropdownMenuItem(text={Text(label)},onClick={onChange(label);expanded=false}) } }
- }
+fun MaritalStatusField(value:String,onChange:(String)->Unit,supportingText:String?=null) {
+ FieldDropdown(stringResource(R.string.field_marital),value,listOf("Soltero(a)","Casado(a)","Divorciado(a)","Viudo(a)"),{ it },onChange,supportingText=supportingText)
 }
+
+/** Label of a required field, marked as in the mockups: "Nombre completo *". */
+@Composable
+private fun required(label:Int)="${stringResource(label)} *"

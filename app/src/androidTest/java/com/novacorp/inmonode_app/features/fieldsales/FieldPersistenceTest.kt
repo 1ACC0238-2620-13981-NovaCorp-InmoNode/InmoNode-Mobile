@@ -4,6 +4,7 @@ import androidx.room3.Room
 import androidx.test.platform.app.InstrumentationRegistry
 import com.novacorp.inmonode_app.core.database.InmoNodeDatabase
 import com.novacorp.inmonode_app.core.network.AuthenticatedRequestOwner
+import com.novacorp.inmonode_app.features.fieldsales.domain.model.NegotiationTerms
 import com.novacorp.inmonode_app.features.fieldsales.domain.model.ReservationStatus
 import com.novacorp.inmonode_app.features.fieldsales.infrastructure.local.*
 import com.novacorp.inmonode_app.features.fieldsales.infrastructure.remote.*
@@ -113,8 +114,25 @@ class FieldPersistenceTest {
                 lot.copy(geometry = lot.geometry.copy(coordinates = emptyList()))
             }))
         })
-        assertTrue(portfolio.download().isFailure)
+        val failure = portfolio.download().exceptionOrNull()
+        assertEquals("the agent reads why, not the exception", UnusablePortfolioException.MESSAGE, failure?.message)
         assertEquals(stable.projects, portfolio.observePortfolio().first().projects)
+    }
+
+    /** T49: the backend accepts plan lots without front or depth, as irregular ones are; they must not break the download. */
+    @Test fun anIrregularLotWithoutFrontOrDepthIsDownloadedAndKeptOffline() = runBlocking {
+        service.catalog = service.catalog.copy(projects = service.catalog.projects.map { project ->
+            project.copy(lots = project.lots.copy(features = project.lots.features.map { lot ->
+                lot.copy(properties = lot.properties.copy(front = null, depth = null))
+            }))
+        })
+
+        val downloaded = portfolio.download().getOrThrow().projects.single().lots.single()
+
+        assertNull(downloaded.dimensions.front)
+        assertNull(downloaded.dimensions.depth)
+        assertEquals(BigDecimal("120"), downloaded.dimensions.area)
+        assertEquals(downloaded, portfolio.observePortfolio().first().projects.single().lots.single())
     }
 
     @Test fun interruptedOrIncompleteSyncNeverAcknowledgesLocalRows() = runBlocking {
@@ -140,6 +158,45 @@ class FieldPersistenceTest {
         assertEquals("REASSIGNED", database.reservationDao().find(1, id)?.conflictReason)
         assertEquals(replacement.id, database.voucherDao().pending(1).single().reservationId)
         assertEquals("BLOCKED", database.lotDao().find(1, 10)?.status)
+    }
+
+    @Test fun aConflictTakesItsLotBackOnlyOnceItIsFreeAgain() = runBlocking {
+        val id = pendingReservation()
+        service.conflict = true
+        sync.synchronize().getOrThrow()
+        assertTrue(reservations.reassign(id, 10).isFailure)
+        // A later portfolio download shows the lot free again, for example after a buyer's web hold expired.
+        database.lotDao().upsert(listOf(database.lotDao().find(1, 10)!!.copy(status = "AVAILABLE")))
+        val replacement = reservations.reassign(id, 10).getOrThrow()
+        assertNotEquals(id, replacement.id)
+        assertEquals(10L, replacement.lotId)
+        assertEquals("REASSIGNED", database.reservationDao().find(1, id)?.conflictReason)
+    }
+
+    @Test fun negotiationTermsArePersistedAndCarriedByReassignment() = runBlocking {
+        portfolio.download().getOrThrow()
+        val prospect = prospects.register("12345678", "Ana Pérez", "", "Soltera").getOrThrow()
+        val terms = NegotiationTerms(BigDecimal("150.50"), "Cerco perimétrico", "Aprobado por gerencia")
+        val draft = reservations.createDraft(10, prospect.id, BigDecimal("200"), terms).getOrThrow()
+        assertEquals(terms, reservations.observeReservations().first().single().terms)
+        readyVoucher(draft.id)
+        reservations.confirmDraft(draft.id).getOrThrow()
+        service.conflict = true
+        sync.synchronize().getOrThrow()
+        database.lotDao().upsert(listOf(database.lotDao().find(1, 10)!!.copy(id = 11, code = "A-2", status = "AVAILABLE")))
+        assertEquals(terms, reservations.reassign(draft.id, 11).getOrThrow().terms)
+    }
+
+    @Test fun invalidDiscountOrAmountAboveFinalPriceStoresNothing() = runBlocking {
+        portfolio.download().getOrThrow()
+        val prospect = prospects.register("12345678", "Ana Pérez", "", "Soltera").getOrThrow()
+        val tooHigh = reservations.createDraft(10, prospect.id, BigDecimal("200"), NegotiationTerms(BigDecimal("1000")))
+        assertEquals("El descuento debe estar entre S/ 0.00 y S/ 999.99.", tooHigh.exceptionOrNull()?.message)
+        val negative = reservations.createDraft(10, prospect.id, BigDecimal("200"), NegotiationTerms(BigDecimal("-1")))
+        assertTrue(negative.isFailure)
+        val aboveFinal = reservations.createDraft(10, prospect.id, BigDecimal("901"), NegotiationTerms(BigDecimal("100")))
+        assertEquals("El monto debe ser positivo y no superar el precio final del lote (S/ 900.00).", aboveFinal.exceptionOrNull()?.message)
+        assertTrue(reservations.observeReservations().first().isEmpty())
     }
 
     @Test fun prospectBatchesRespectBackendMaximum() = runBlocking {

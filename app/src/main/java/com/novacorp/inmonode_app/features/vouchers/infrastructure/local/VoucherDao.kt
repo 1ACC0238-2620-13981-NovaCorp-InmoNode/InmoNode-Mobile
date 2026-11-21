@@ -15,7 +15,15 @@ interface VoucherDao {
     suspend fun pending(ownerId: Long): List<VoucherEntity>
     @Query("SELECT * FROM vouchers WHERE ownerId = :ownerId AND reservationId = :reservationId AND status = 'READY_TO_SYNC'")
     suspend fun readyForReservation(ownerId: Long, reservationId: String): List<VoucherEntity>
+    @Query("SELECT * FROM vouchers WHERE ownerId = :ownerId AND reservationId = :reservationId AND status = 'RECAPTURE_REQUIRED'")
+    suspend fun illegibleForReservation(ownerId: Long, reservationId: String): List<VoucherEntity>
     @Upsert suspend fun upsert(voucher: VoucherEntity)
+    @Query("""SELECT vouchers.* FROM vouchers INNER JOIN reservations
+        ON reservations.ownerId = vouchers.ownerId AND reservations.id = vouchers.reservationId
+        WHERE vouchers.ownerId = :ownerId AND reservations.status = 'CANCELLED' AND vouchers.status != 'SYNCED'""")
+    suspend fun ofCancelledReservations(ownerId: Long): List<VoucherEntity>
+    @Query("DELETE FROM vouchers WHERE ownerId = :ownerId AND id IN (:ids)")
+    suspend fun delete(ownerId: Long, ids: List<String>)
     @Query("UPDATE vouchers SET reservationId = :newId WHERE ownerId = :ownerId AND reservationId = :oldId AND status != 'SYNCED'")
     suspend fun reassign(ownerId: Long, oldId: String, newId: String)
     @Query("SELECT * FROM payment_evidences WHERE ownerId = :ownerId AND reservationId = :reservationId")

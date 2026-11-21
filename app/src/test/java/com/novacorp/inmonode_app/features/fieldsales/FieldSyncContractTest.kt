@@ -3,6 +3,7 @@ package com.novacorp.inmonode_app.features.fieldsales
 import com.google.gson.Gson
 import com.novacorp.inmonode_app.features.fieldsales.infrastructure.local.ReservationEntity
 import com.novacorp.inmonode_app.features.fieldsales.infrastructure.local.holdsLot
+import com.novacorp.inmonode_app.features.fieldsales.infrastructure.local.toRecord
 import com.novacorp.inmonode_app.features.fieldsales.infrastructure.remote.*
 import com.novacorp.inmonode_app.features.fieldsales.infrastructure.repositories.validateSyncResponse
 import org.junit.Assert.*
@@ -48,5 +49,17 @@ class FieldSyncContractTest {
         assertEquals(BigDecimal("100.25"), record["initialAmount"].asBigDecimal)
         assertEquals("2026-10-09T12:00:00Z", record["reservedAt"].asString)
         assertFalse(record.has("ownerId"))
+        assertFalse(record.has("discountAmount") || record.has("bonus") || record.has("negotiationNotes"))
+    }
+
+    @Test fun negotiationTermsTravelWithTheReservation() {
+        val row = ReservationEntity(1, "a", 10, "p", "100.25", "2026-10-09T12:00:00Z",
+            discountAmount = "1500.50", bonus = "Cerco perimétrico", negotiationNotes = "Aprobado por gerencia")
+        val record = Gson().toJsonTree(FieldSyncRequestDto(emptyList(), listOf(row.toRecord())))
+            .asJsonObject.getAsJsonArray("reservations").first().asJsonObject
+        assertTrue(record["discountAmount"].asJsonPrimitive.isNumber)
+        assertEquals(BigDecimal("1500.50"), record["discountAmount"].asBigDecimal)
+        assertEquals("Cerco perimétrico", record["bonus"].asString)
+        assertEquals("Aprobado por gerencia", record["negotiationNotes"].asString)
     }
 }

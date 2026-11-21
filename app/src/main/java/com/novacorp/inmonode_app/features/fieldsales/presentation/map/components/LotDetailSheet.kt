@@ -1,4 +1,6 @@
 package com.novacorp.inmonode_app.features.fieldsales.presentation.map.components
+
+import com.novacorp.inmonode_app.core.format.formatMoney
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -14,12 +16,13 @@ fun LotDetailSheet(lot: Lot, onDismiss: () -> Unit, onSimulate: () -> Unit, onRe
     ModalBottomSheet(onDismissRequest=onDismiss) {
         Column(Modifier.padding(16.dp), verticalArrangement=Arrangement.spacedBy(16.dp)) {
             Text(lot.code,style=MaterialTheme.typography.headlineMedium)
-            Text(if(lot.isAvailable()) stringResource(R.string.map_available) else stringResource(R.string.lot_unavailable))
+            Text(if(lot.isAvailable()) stringResource(R.string.map_legend_available) else stringResource(R.string.lot_unavailable))
             FieldValue(stringResource(R.string.lot_area), "${lot.dimensions.area} m²")
-            FieldValue(stringResource(R.string.lot_front), "${lot.dimensions.front} m")
-            FieldValue(stringResource(R.string.lot_depth), "${lot.dimensions.depth} m")
-            FieldValue(stringResource(R.string.lot_price), "${lot.currency} ${lot.price}")
-            OutlinedButton(onClick=onSimulate,modifier=Modifier.fillMaxWidth()) { Text(stringResource(R.string.lot_simulate)) }
+            // An irregular lot has no single front or depth: only what the plan gives is shown.
+            lot.dimensions.front?.let { FieldValue(stringResource(R.string.lot_front), "$it m") }
+            lot.dimensions.depth?.let { FieldValue(stringResource(R.string.lot_depth), "$it m") }
+            FieldValue(stringResource(R.string.lot_price), formatMoney(lot.currency,lot.price))
+            SecondaryButton(stringResource(R.string.lot_simulate),onClick=onSimulate)
             PrimaryButton(stringResource(R.string.lot_reserve),lot.isAvailable(),onReserve)
         }
     }

@@ -105,14 +105,14 @@ class VoucherRepositoryImpl @Inject constructor(
             // The agent edits fields, never the confidence reported by the recognition engine.
             val normalized = data.copy(currency = data.currency?.trim()?.uppercase(),
                 operationCode = data.operationCode?.trim(), confidence = row.ocrData().confidence)
+            require(OcrFieldError.AMOUNT_DECIMALS !in normalized.fieldErrors()) { "El monto debe tener como máximo dos decimales." }
             require(normalized.isValid()) { "Completa monto, moneda, fecha válida y número de operación antes de confirmar." }
-            require(normalized.amount!!.stripTrailingZeros().scale() <= 2) { "El monto debe tener como máximo dos decimales." }
-            val original = row.ocrData()
-            val corrected = original.amount?.compareTo(normalized.amount) != 0 || original.currency != normalized.currency ||
-                original.operationDate != normalized.operationDate || original.operationCode != normalized.operationCode
+            val corrected = normalized.differsFrom(row.ocrData())
             val updated = row.copy(dataJson = voucherGson.toJson(normalized), status = "READY_TO_SYNC",
                 manuallyCorrected = row.manuallyCorrected || corrected, errorMessage = null)
             dao.upsert(updated)
+            // A legible replacement supersedes the illegible captures of its separation: they could never be sent.
+            deleteWithFiles(owner, dao.illegibleForReservation(owner, row.reservationId))
             updated.toDomain()
         }
     }
@@ -181,6 +181,22 @@ class VoucherRepositoryImpl @Inject constructor(
             return@operationResult voucherGson.fromJson(cached.payloadJson, PaymentEvidencesDto::class.java).toDomain(cached.fetchedAt, true)
         }
         voucherGson.fromJson(row.payloadJson, PaymentEvidencesDto::class.java).toDomain(row.fetchedAt)
+    }
+
+    override suspend fun discardCancelled(): Result<Unit> = operationResult {
+        mutationMutex.withLock {
+            val owner = session.requireOwner()
+            deleteWithFiles(owner, dao.ofCancelledReservations(owner))
+        }
+    }
+
+    private suspend fun deleteWithFiles(owner: Long, rows: List<VoucherEntity>) {
+        if (rows.isEmpty()) return
+        dao.delete(owner, rows.map { it.id })
+        // Files go only after their rows, so a failed delete never leaves a row pointing at a missing image.
+        withContext(kotlinx.coroutines.NonCancellable + Dispatchers.IO) {
+            rows.forEach { row -> File(row.imagePath).delete(); row.uploadPath?.let { File(it).delete() } }
+        }
     }
 
     companion object { private const val MAX_CAPTURE_BYTES = 40L * 1024 * 1024 }

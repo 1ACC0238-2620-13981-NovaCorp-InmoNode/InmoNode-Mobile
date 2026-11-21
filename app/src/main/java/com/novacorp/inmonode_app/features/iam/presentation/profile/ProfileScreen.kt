@@ -134,9 +134,8 @@ fun ProfileContent(
         com.novacorp.inmonode_app.core.designsystem.components.FieldValue(stringResource(R.string.profile_pending),state.pendingCount.toString())
         Spacer(Modifier.height(16.dp))
         com.novacorp.inmonode_app.core.designsystem.components.FieldValue(stringResource(R.string.profile_catalog_version),com.novacorp.inmonode_app.core.designsystem.components.displayTimestamp(state.catalogVersion))
-        TextButton(onClick = onPortfolio, modifier = Modifier.fillMaxWidth()) {
-            Text(stringResource(R.string.profile_portfolio))
-        }
+        Spacer(Modifier.height(24.dp))
+        com.novacorp.inmonode_app.core.designsystem.components.SecondaryButton(stringResource(R.string.profile_portfolio), onClick = onPortfolio)
 
         Spacer(modifier = Modifier.height(32.dp))
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)

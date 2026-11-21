@@ -78,6 +78,28 @@ class AuthRepositoryTest {
         assertNull(manager.getAccessToken())
         assertNull(manager.getRefreshToken())
     }
+    @Test fun expiredAccessTokenKeepsTheSessionWhileItCanBeRenewed() = runTest {
+        val manager = TokenManager(MemorySessionStore())
+        manager.saveTokens(fixtureToken(exp = 1), "synthetic-refresh")
+        val repository = AuthRepositoryImpl(FixtureAuthService(), manager, JwtDecoder(), backgroundScope)
+        assertEquals(1L, repository.currentUser.first()?.id)
+    }
+    @Test fun sessionEndsWhenTheRefreshTokenIsGone() = runTest {
+        val store = MemorySessionStore()
+        store.updateData { preferences ->
+            preferences.toMutablePreferences().apply {
+                this[androidx.datastore.preferences.core.stringPreferencesKey("access_token")] = fixtureToken()
+            }
+        }
+        val repository = AuthRepositoryImpl(FixtureAuthService(), TokenManager(store), JwtDecoder(), backgroundScope)
+        assertNull(repository.currentUser.first())
+    }
+    @Test fun restoredExpiredBuyerIsNotAuthenticated() = runTest {
+        val manager = TokenManager(MemorySessionStore())
+        manager.saveTokens(fixtureToken(exp = 1, role = "BUYER"), "synthetic-refresh")
+        val repository = AuthRepositoryImpl(FixtureAuthService(), manager, JwtDecoder(), backgroundScope)
+        assertNull(repository.currentUser.first())
+    }
     @Test fun restoredBuyerIsNotAuthenticated() = runTest {
         val manager = TokenManager(MemorySessionStore())
         manager.saveTokens(fixtureToken(role = "BUYER"), "synthetic-refresh")

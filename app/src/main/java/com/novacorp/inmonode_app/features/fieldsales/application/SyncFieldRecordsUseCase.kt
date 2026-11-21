@@ -5,6 +5,8 @@ import com.novacorp.inmonode_app.features.fieldsales.domain.model.SyncSummary
 import com.novacorp.inmonode_app.features.fieldsales.domain.repositories.FieldSyncRepository
 import com.novacorp.inmonode_app.features.fieldsales.domain.repositories.ReservationRepository
 import com.novacorp.inmonode_app.features.iam.domain.AuthRepository
+import com.novacorp.inmonode_app.features.vouchers.domain.IdentityDocumentRepository
+import com.novacorp.inmonode_app.features.vouchers.domain.IdentityDocumentStatus
 import com.novacorp.inmonode_app.features.vouchers.domain.VoucherRepository
 import com.novacorp.inmonode_app.features.vouchers.domain.VoucherStatus
 import kotlinx.coroutines.flow.first
@@ -16,11 +18,14 @@ import javax.inject.Singleton
 @Singleton
 class SyncFieldRecordsUseCase @Inject constructor(private val fields: FieldSyncRepository,
     private val reservations: ReservationRepository, private val vouchers: VoucherRepository,
-    private val auth: AuthRepository) {
+    private val identityDocuments: IdentityDocumentRepository, private val auth: AuthRepository) {
     private val mutex = Mutex()
     suspend operator fun invoke(): Result<SyncSummary> = mutex.withLock {
         val owner = auth.currentUser.first()?.takeIf { it.isFieldAgent }?.id
             ?: return@withLock Result.failure(IllegalStateException("Inicia sesión como agente de campo."))
+        // Vouchers left by discarded drafts would otherwise stay queued forever; a failure here must not block the sync.
+        vouchers.discardCancelled()
+        identityDocuments.discardCancelled()
         val summary = fields.synchronize().getOrElse { return@withLock Result.failure(it) }
         if (auth.currentUser.first()?.id != owner) return@withLock sessionChanged()
         val syncedIds = reservations.observeReservations().first()
@@ -33,7 +38,15 @@ class SyncFieldRecordsUseCase @Inject constructor(private val fields: FieldSyncR
             if (auth.currentUser.first()?.id != owner) return@withLock sessionChanged()
             vouchers.upload(voucher.id).getOrElse { return@withLock Result.failure(it) }
         }
-        Result.success(summary)
+        // US-59: the photo of the buyer's identity document goes with the voucher, once its separation is synced.
+        val documents = identityDocuments.observeDocuments().first().filter {
+            it.status == IdentityDocumentStatus.READY_TO_SYNC && it.reservationId in syncedIds
+        }.sortedBy { it.capturedAt }
+        for (document in documents) {
+            if (auth.currentUser.first()?.id != owner) return@withLock sessionChanged()
+            identityDocuments.upload(document.id).getOrElse { return@withLock Result.failure(it) }
+        }
+        Result.success(summary.copy(vouchersUploaded = pending.size, identityDocumentsUploaded = documents.size))
     }
 
     private fun sessionChanged(): Result<SyncSummary> =

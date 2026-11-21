@@ -1,4 +1,7 @@
 package com.novacorp.inmonode_app.features.vouchers.presentation.separations
+
+import com.novacorp.inmonode_app.core.format.formatMoney
+import com.novacorp.inmonode_app.core.format.formatAmount
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -14,7 +17,8 @@ import com.novacorp.inmonode_app.core.designsystem.components.*
 import androidx.compose.ui.platform.LocalUriHandler
 import java.time.Instant
 @Composable
-fun SeparationDetailScreen(modifier:Modifier=Modifier,viewModel:SeparationsViewModel=hiltViewModel(),onBack:()->Unit,onReplace:(String)->Unit,onContract:(String)->Unit) {
+fun SeparationDetailScreen(modifier:Modifier=Modifier,viewModel:SeparationsViewModel=hiltViewModel(),onBack:()->Unit,onReplace:(String)->Unit,onContract:(String)->Unit,
+ onIdentityDocument:(String)->Unit) {
  val s by viewModel.uiState.collectAsStateWithLifecycle()
  val uri=LocalUriHandler.current
  var now by remember { mutableStateOf(Instant.now()) }
@@ -22,21 +26,30 @@ fun SeparationDetailScreen(modifier:Modifier=Modifier,viewModel:SeparationsViewM
   while(true) { now=Instant.now();kotlinx.coroutines.delay(1000) }
  }
  FieldPage(stringResource(R.string.separation_detail),modifier,onBack) {
-  s.selected?.let { row ->
+  // An if/else, not `?.let { } ?:`: the let block ends with `evidences?.let`, so it yields null before the
+  // first evidence load and the elvis branch rendered the empty state under a valid separation.
+  val row=s.selected
+  if(row==null) Text(stringResource(R.string.field_empty)) else {
    Text(s.lot(row.lotId)?.code.orEmpty(),style=MaterialTheme.typography.headlineSmall)
    FieldValue(stringResource(R.string.field_name),s.prospects.firstOrNull { it.id==row.prospectId }?.fullName.orEmpty())
-   FieldValue(stringResource(R.string.field_amount),row.initialAmount.toPlainString())
+   FieldValue(stringResource(R.string.field_amount),s.lot(row.lotId)?.let { formatMoney(it.currency,row.initialAmount) }?:formatAmount(row.initialAmount))
    StatusChip(s.evidences?.status?:row.serverStatus?:row.status.name)
    (s.evidences?.waitingUntil?:row.blockedUntil)?.let { until ->
     val remaining=runCatching { java.time.Duration.between(now,Instant.parse(until)).seconds.coerceAtLeast(0) }.getOrNull()
     remaining?.let { seconds ->
      Text("%02d:%02d:%02d".format(seconds/3600,(seconds%3600)/60,seconds%60),style=MaterialTheme.typography.headlineMedium)
     }
-    Text(displayTimestamp(until))
+    Text(stringResource(R.string.lot_held_until,displayTimestamp(until)))
    }
    Text(stringResource(R.string.separation_registered),style=MaterialTheme.typography.titleMedium)
    Text(displayTimestamp(row.reservedAt),style=MaterialTheme.typography.bodySmall)
-   OutlinedButton(onClick={onContract(row.id)},modifier=Modifier.fillMaxWidth()) { Text(stringResource(R.string.reservation_contract)) }
+   s.identityDocumentState(row)?.let { state -> val document=s.documents[row.id]
+    IdentityDocumentLabel(state)
+    if(state==IdentityDocumentState.WAITING) document?.errorMessage?.let { FieldError(it) }
+    if(state==IdentityDocumentState.PENDING) PrimaryButton(stringResource(R.string.identity_document_attach)) { onIdentityDocument(row.id) }
+    else if(document?.replaceable==true) TextButton(onClick={onIdentityDocument(row.id)}) { Text(stringResource(R.string.identity_document_retake)) }
+   }
+   SecondaryButton(stringResource(R.string.reservation_contract)) { onContract(row.id) }
    if(s.loading)LinearProgressIndicator(modifier=Modifier.fillMaxWidth())
    FieldError(s.errorMessage)
    if(s.errorMessage!=null)PrimaryButton(stringResource(R.string.field_retry),onClick=viewModel::retry)
@@ -46,7 +59,7 @@ fun SeparationDetailScreen(modifier:Modifier=Modifier,viewModel:SeparationsViewM
     if(result.evidences.isEmpty())Text(stringResource(R.string.field_empty))
     result.evidences.forEach { evidence -> OutlinedCard(Modifier.fillMaxWidth()) {
      Column(Modifier.padding(16.dp),verticalArrangement=Arrangement.spacedBy(8.dp)) {
-      Text("${evidence.currency} ${evidence.amount} · ${evidence.operationCode}",style=MaterialTheme.typography.titleSmall)
+      Text("${formatMoney(evidence.currency,evidence.amount)} · ${evidence.operationCode}",style=MaterialTheme.typography.titleSmall)
       Text(evidence.operationDate);StatusChip(evidence.status);evidence.rejectionReason?.let { FieldError(it) }
       if(evidence.downloadUrl!=null&&evidence.downloadExpiresAt?.let { runCatching { Instant.parse(it)>Instant.now() }.getOrDefault(false) }==true)
        TextButton(onClick={uri.openUri(evidence.downloadUrl)}) { Text(stringResource(R.string.separation_download)) }
@@ -54,6 +67,14 @@ fun SeparationDetailScreen(modifier:Modifier=Modifier,viewModel:SeparationsViewM
     if(result.status=="REJECTED"&&result.waitingUntil?.let { runCatching { Instant.parse(it)>Instant.now() }.getOrDefault(false) }==true)
      PrimaryButton(stringResource(R.string.separation_replace)) { onReplace(row.id) }
    }
-  }?:Text(stringResource(R.string.field_empty))
+  }
  }
+}
+
+/** US-59: pending stands out, since the buyer's file is incomplete until the photo is attached. */
+@Composable
+internal fun IdentityDocumentLabel(state:IdentityDocumentState) {
+ Text(stringResource(when(state) { IdentityDocumentState.PENDING -> R.string.identity_document_pending
+  IdentityDocumentState.WAITING -> R.string.identity_document_waiting;IdentityDocumentState.SENT -> R.string.identity_document_sent }),
+  style=MaterialTheme.typography.bodyMedium,color=if(state==IdentityDocumentState.PENDING) MaterialTheme.colorScheme.error else LocalContentColor.current)
 }

@@ -37,3 +37,9 @@ val SurfaceContainerHighestDark = Color(0xFF343833)
 val ForestGreenContainerDark = Color(0xFF1C5A2C)
 val AlertYellowContainerDark = Color(0xFF4B4D16)
 val TerracottaContainerDark = Color(0xFF7A2A12)
+
+// Cadastral map: the ground between blocks and the lots a filter leaves out
+val MapGround = Color(0xFFE1E8DB)
+val MapGroundDark = Color(0xFF1F221E)
+val LotFilteredOut = Color(0xFFD3D8CF)
+val LotFilteredOutDark = Color(0xFF44483F)

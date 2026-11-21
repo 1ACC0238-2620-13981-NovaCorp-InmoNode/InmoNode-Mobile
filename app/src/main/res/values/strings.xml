@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">InmoNode-App</string>
+    <string name="app_name">InmoNode</string>
     <string name="coming_soon_message">En construcción. Esta pantalla llega con %1$s.</string>
 
     <!-- Bottom navigation -->
@@ -63,6 +63,9 @@
     <string name="field_document">Documento de identidad</string>
     <string name="field_name">Nombre completo</string>
     <string name="field_phone">Teléfono</string>
+    <string name="field_optional">Opcional</string>
+    <string name="prospect_document_help">De 8 a 12 letras o números</string>
+    <string name="prospect_marital_help">Requerido para el contrato preliminar</string>
     <string name="field_marital">Estado civil</string>
     <string name="portfolio_incomplete">Descarga incompleta</string>
     <string name="portfolio_preparing">Preparando jornada</string>
@@ -75,12 +78,13 @@
     <string name="map_available">Disponibles</string>
     <string name="map_reserved">Separado</string>
     <string name="map_sold">Vendido</string>
+    <string name="map_legend_available">Disponible</string>
     <string name="map_area">Metraje</string>
     <string name="map_clear">Limpiar</string>
     <string name="map_no_results">Sin resultados para estos filtros</string>
     <string name="map_no_results_help">Ajusta el metraje o limpia los filtros para ver otros lotes.</string>
     <string name="map_download">Descargar portafolio</string>
-    <string name="map_select_project">Seleccionar proyecto</string>
+    <string name="field_project">Proyecto</string>
     <string name="map_center">Centrar mapa</string>
     <string name="lot_reserve">Separar lote</string>
     <string name="lot_simulate">Simular financiamiento</string>
@@ -104,14 +108,44 @@
     <string name="reservation_contract">Contrato preliminar</string>
     <string name="reservation_confirm">Confirmar separación</string>
     <string name="reservation_saved">Separación registrada</string>
-    <string name="reservation_saved_help">La separación y su voucher están guardados. Sincroniza para confirmar la disponibilidad con el servidor.</string>
+    <string name="reservation_saved_help">La separación y su voucher están guardados y se enviarán automáticamente para confirmar la disponibilidad con el servidor.</string>
     <string name="reservation_draft">Borrador</string>
+    <string name="reservation_draft_help">Al continuar se guarda un borrador en este dispositivo. Después capturarás el voucher y revisarás el contrato preliminar.</string>
     <string name="reservation_conflict">Conflicto de disponibilidad</string>
     <string name="reservation_pending">Pendiente</string>
     <string name="reservation_synced">Sincronizado</string>
     <string name="reservation_cancel_draft">Descartar borrador</string>
+    <string name="reservation_negotiation">Condiciones de negociación (opcional)</string>
+    <string name="reservation_discount">Descuento autorizado</string>
+    <string name="reservation_discount_range">Entre %1$s y %2$s</string>
+    <string name="reservation_bonus">Bono o beneficio</string>
+    <string name="reservation_notes">Observaciones</string>
+    <string name="reservation_final_price">Precio final</string>
+    <string name="reservation_lot">Lote</string>
+    <string name="reservation_lot_price">Precio del lote</string>
+    <string name="reservation_text_count">%1$d/%2$d</string>
     <string name="contract_ack">He revisado los datos y el contrato preliminar.</string>
-    <string name="contract_missing">Faltan datos para generar el contrato. El prospecto debe tener estado civil.</string>
+    <string name="contract_missing">Selecciona el estado civil del prospecto para generar el contrato.</string>
+    <string name="contract_missing_title">No se puede generar el contrato</string>
+    <string name="contract_missing_fields">Falta completar: %1$s.</string>
+    <string name="contract_missing_elsewhere">Este dato no se puede completar en este paso. Vuelve y revisa la separación.</string>
+    <string name="contract_complete">Completar dato</string>
+    <string name="contract_cancel">Cancelar</string>
+    <string name="contract_field_buyer_name">Nombre del prospecto</string>
+    <string name="contract_field_buyer_document">Documento de identidad del prospecto</string>
+    <string name="contract_field_marital">Estado civil del prospecto</string>
+    <string name="contract_field_lot">Lote de la separación en el catálogo descargado</string>
+    <string name="contract_field_lot_price">Precio del lote</string>
+    <string name="contract_field_initial_amount">Monto inicial de la separación</string>
+    <string name="contract_generating">Generando el contrato en el dispositivo…</string>
+    <plurals name="contract_pages">
+        <item quantity="one">%1$d página · Generado sin conexión · Plantilla v%2$s</item>
+        <item quantity="many">%1$d páginas · Generado sin conexión · Plantilla v%2$s</item>
+        <item quantity="other">%1$d páginas · Generado sin conexión · Plantilla v%2$s</item>
+    </plurals>
+    <string name="contract_page">Página %1$d de %2$d del contrato preliminar</string>
+    <string name="contract_share">Compartir contrato</string>
+    <string name="contract_summary">Resumen de la separación</string>
     <string name="voucher_capture">Escanear voucher</string>
     <string name="voucher_camera">Abrir cámara</string>
     <string name="voucher_gallery">Elegir imagen</string>
@@ -123,13 +157,66 @@
     <string name="voucher_currency">Moneda (PEN, USD…)</string>
     <string name="voucher_amount">Monto del comprobante</string>
     <string name="voucher_process">Procesar imagen</string>
+    <string name="voucher_error_amount">Escribe un monto mayor a cero, sin separador de miles; por ejemplo 1500.00.</string>
+    <string name="voucher_error_amount_decimals">Usa como máximo dos decimales.</string>
+    <string name="voucher_error_currency">Usa el código de 3 letras de la moneda, como PEN o USD.</string>
+    <string name="voucher_error_date_format">Usa el formato AAAA-MM-DD; por ejemplo 2026-01-31.</string>
+    <string name="voucher_error_date_future">La fecha de operación no puede ser posterior a hoy.</string>
+    <string name="voucher_error_code_missing">Escribe el código de operación que figura en el voucher.</string>
+    <string name="voucher_error_code_long">Usa como máximo 50 caracteres.</string>
     <string name="voucher_review_hint">Revisa y corrige los datos antes de continuar.</string>
     <string name="voucher_image">Imagen del voucher</string>
     <string name="sync_start">Sincronizar ahora</string>
     <string name="sync_empty">No hay registros pendientes.</string>
+    <string name="sync_background_waiting">Los registros pendientes se enviarán automáticamente al recuperar la conexión.</string>
+    <string name="sync_background_running">Enviando registros pendientes en segundo plano…</string>
+    <string name="sync_background_retry">La sincronización se pausó y se reintentará automáticamente (intento %1$d). Los registros siguen pendientes.</string>
     <string name="sync_conflicts">Resolver conflicto</string>
+    <string name="lot_held_until">Lote bloqueado hasta %1$s</string>
+    <string name="sync_result_nothing">No hay registros pendientes: todo ya está sincronizado.</string>
+    <string name="sync_result_sent">Enviados al servidor: %1$s.</string>
+    <string name="sync_result_and">y</string>
+    <plurals name="sync_result_prospects">
+        <item quantity="one">%d prospecto</item>
+        <item quantity="many">%d prospectos</item>
+        <item quantity="other">%d prospectos</item>
+    </plurals>
+    <plurals name="sync_result_reservations">
+        <item quantity="one">%d separación</item>
+        <item quantity="many">%d separaciones</item>
+        <item quantity="other">%d separaciones</item>
+    </plurals>
+    <plurals name="sync_result_vouchers">
+        <item quantity="one">%d voucher</item>
+        <item quantity="many">%d vouchers</item>
+        <item quantity="other">%d vouchers</item>
+    </plurals>
+    <plurals name="sync_result_identity_documents">
+        <item quantity="one">%d documento de identidad</item>
+        <item quantity="many">%d documentos de identidad</item>
+        <item quantity="other">%d documentos de identidad</item>
+    </plurals>
+    <plurals name="sync_result_conflicts">
+        <item quantity="one">%d separación tiene conflicto de disponibilidad: resuélvelo en la lista.</item>
+        <item quantity="many">%d separaciones tienen conflicto de disponibilidad: resuélvelos en la lista.</item>
+        <item quantity="other">%d separaciones tienen conflicto de disponibilidad: resuélvelos en la lista.</item>
+    </plurals>
+    <plurals name="nav_conflicts_badge">
+        <item quantity="one">%d conflicto de lote por resolver</item>
+        <item quantity="other">%d conflictos de lote por resolver</item>
+    </plurals>
     <string name="sync_reassign">Reasignar lote</string>
-    <string name="sync_reassign_help">Selecciona otro lote disponible. La separación conservará el prospecto y el comprobante.</string>
+    <string name="sync_reassign_none">No hay lotes disponibles en este proyecto. Elige otro proyecto o actualiza el portafolio cuando haya conexión.</string>
+    <string name="voucher_awaits_lot">Se enviará cuando la separación tenga un nuevo lote.</string>
+    <string name="sync_reassign_help">Se conservan los datos del prospecto, el monto inicial de %1$s y, si los hay, los términos negociados y el voucher. Elige un lote disponible; puede ser el mismo si volvió a quedar libre.</string>
+    <string name="sync_conflict_unavailable">El lote %1$s no estaba disponible cuando tu separación llegó al servidor: otra operación lo tomó antes.</string>
+    <string name="sync_conflict_not_found">El lote %1$s ya no existe en el catálogo del proyecto.</string>
+    <string name="conflict_channel_name">Conflictos de lotes</string>
+    <string name="conflict_channel_description">Avisa cuando otra operación tomó el lote de una separación hecha sin conexión.</string>
+    <plurals name="conflict_notification_text">
+        <item quantity="one">%d separación hecha sin conexión no pudo tomar su lote. Abre la app para elegir otro lote para el prospecto.</item>
+        <item quantity="other">%d separaciones hechas sin conexión no pudieron tomar su lote. Abre la app para elegir otros lotes para los prospectos.</item>
+    </plurals>
     <string name="separations_title">Separaciones</string>
     <string name="separation_detail">Detalle de separación</string>
     <string name="separation_evidences">Comprobantes de pago</string>
@@ -140,7 +227,11 @@
     <string name="wizard_prospect">Prospecto</string>
     <string name="wizard_voucher">Voucher</string>
     <string name="wizard_ocr">Datos OCR</string>
+    <string name="wizard_identity">Documento</string>
     <string name="wizard_contract">Contrato</string>
+    <string name="wizard_step_done">Completado</string>
+    <string name="wizard_step_current">Paso actual</string>
+    <string name="wizard_step_pending">Pendiente</string>
     <string name="status_verifying">En verificación</string>
     <string name="status_verified">Verificada</string>
     <string name="status_rejected">Voucher rechazado</string>
@@ -152,7 +243,7 @@
     <string name="status_review">Revisar datos OCR</string>
     <string name="profile_pending">Registros pendientes</string>
     <string name="profile_catalog_version">Versión del catálogo</string>
-    <string name="reservation_contract_note">Vista preliminar de los datos de separación. La plantilla contractual aprobada aún no está disponible.</string>
+    <string name="reservation_contract_note">Borrador generado en este dispositivo, sin conexión y sin valor legal: el contrato oficial lo emite el back-office después de verificar el voucher. Pellizca una página para ampliarla.</string>
     <string name="voucher_confidence">Confianza OCR %1$d%%</string>
     <string name="voucher_manual">Editado manualmente · se notificará a back-office</string>
     <string name="field_refresh">Actualizar</string>
@@ -160,8 +251,19 @@
     <string name="field_loading">Cargando…</string>
     <string name="voucher_flash">Cambiar flash</string>
     <string name="voucher_capture_hint">Encuadra el voucher completo dentro del marco</string>
-    <string name="voucher_step">Paso 2 de 4</string>
-    <string name="prospect_saved_help">Los datos están guardados en el dispositivo. Se enviarán al sincronizar.</string>
+    <string name="voucher_step">Paso 2 de 5</string>
+    <string name="identity_document_capture">Documento de identidad</string>
+    <string name="identity_document_hint">Encuadra el documento de identidad del comprador dentro del marco</string>
+    <string name="identity_document_permission">Permite el acceso a la cámara para capturar el documento de identidad del comprador.</string>
+    <string name="identity_document_step">Paso 4 de 5 (opcional)</string>
+    <string name="identity_document_later">Se enviará en la próxima sincronización.</string>
+    <string name="identity_document_skip">Omitir</string>
+    <string name="identity_document_pending">Documento de identidad pendiente</string>
+    <string name="identity_document_waiting">Documento de identidad por enviar</string>
+    <string name="identity_document_sent">Documento de identidad enviado</string>
+    <string name="identity_document_attach">Adjuntar documento de identidad</string>
+    <string name="identity_document_retake">Volver a capturar el documento de identidad</string>
+    <string name="prospect_saved_help">Los datos están guardados en el dispositivo y se enviarán automáticamente cuando haya conexión.</string>
     <string name="portfolio_background">Continuar en segundo plano</string>
     <string name="simulation_minimum">Inicial mínima</string>
     <string name="simulation_maximum">Plazo máximo (meses)</string>

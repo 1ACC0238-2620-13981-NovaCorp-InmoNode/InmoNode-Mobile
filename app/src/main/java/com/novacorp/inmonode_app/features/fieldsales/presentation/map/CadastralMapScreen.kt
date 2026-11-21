@@ -1,9 +1,11 @@
 package com.novacorp.inmonode_app.features.fieldsales.presentation.map
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -15,7 +17,7 @@ import com.novacorp.inmonode_app.features.fieldsales.presentation.map.components
 fun CadastralMapScreen(modifier: Modifier=Modifier, viewModel: CadastralMapViewModel=hiltViewModel(),
     onDownload: () -> Unit, onSimulate: (Long) -> Unit, onReserve: (Long) -> Unit) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    var expanded by remember { mutableStateOf(false) }; var reset by remember { mutableIntStateOf(0) }
+    var reset by remember { mutableIntStateOf(0) }
     var initialDownloadOpened by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(false) }
     LaunchedEffect(state.loaded,state.connectivityKnown) {
         if(state.loaded&&state.connectivityKnown&&!initialDownloadOpened) {
@@ -27,13 +29,7 @@ fun CadastralMapScreen(modifier: Modifier=Modifier, viewModel: CadastralMapViewM
         OfflineBanner(state.offline)
         Column(Modifier.padding(horizontal=16.dp,vertical=16.dp)) {
             Text(stringResource(R.string.cadastral_map_title),style=MaterialTheme.typography.headlineMedium)
-            Box {
-                OutlinedButton(onClick={expanded=true},modifier=Modifier.fillMaxWidth()) {
-                    Text(state.project?.name ?: stringResource(R.string.map_select_project)) }
-                DropdownMenu(expanded,onDismissRequest={expanded=false}) {
-                    state.portfolio.projects.forEach { project -> DropdownMenuItem(text={Text(project.name)},onClick={viewModel.project(project.id);expanded=false}) }
-                }
-            }
+            FieldDropdown(stringResource(R.string.field_project),state.project?.name.orEmpty(),state.portfolio.projects,{ it.name },{ viewModel.project(it.id) })
             val maximum=(state.project?.lots?.maxOfOrNull { it.dimensions.area.toFloat() } ?: 1f).coerceAtLeast(1f)
             LotFilterBar(state.availableOnly,state.areaFilter,state.minArea.coerceIn(0f,maximum)..state.maxArea.coerceIn(0f,maximum),maximum,
                 viewModel::available,viewModel::filter,viewModel::area)
@@ -51,15 +47,13 @@ fun CadastralMapScreen(modifier: Modifier=Modifier, viewModel: CadastralMapViewM
                         TextButton(onClick={viewModel.filter(false);viewModel.available(false)}) { Text(stringResource(R.string.map_clear)) }
                     }
                 }
-                OutlinedButton(onClick={reset++},modifier=Modifier.align(Alignment.BottomEnd).padding(8.dp)) {
-                    Text(stringResource(R.string.map_center)) }
+                // A filled round button (mock-up M06): the outlined one had no background and looked disabled on the map.
+                SmallFloatingActionButton(onClick={reset++},modifier=Modifier.align(Alignment.BottomEnd).padding(12.dp),shape=CircleShape,
+                    containerColor=MaterialTheme.colorScheme.surface,contentColor=MaterialTheme.colorScheme.primary) {
+                    Icon(painterResource(R.drawable.ic_center_map),contentDescription=stringResource(R.string.map_center)) }
             }
         }
-        Row(Modifier.padding(16.dp),horizontalArrangement=Arrangement.spacedBy(16.dp)) {
-            Text(stringResource(R.string.map_available),style=MaterialTheme.typography.bodySmall)
-            Text(stringResource(R.string.map_reserved),style=MaterialTheme.typography.bodySmall)
-            Text(stringResource(R.string.map_sold),style=MaterialTheme.typography.bodySmall)
-        }
+        LotLegend(Modifier.padding(16.dp))
     }
     state.selectedLot?.let { lot ->
         if(lot.isAvailable()) LotDetailSheet(lot,{viewModel.select(null)},

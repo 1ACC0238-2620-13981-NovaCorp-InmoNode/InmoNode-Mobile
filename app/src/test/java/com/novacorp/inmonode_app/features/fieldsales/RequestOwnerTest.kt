@@ -13,8 +13,8 @@ import java.io.IOException
 import java.util.Base64
 
 class RequestOwnerTest {
-    private fun token(id: Long, role: String = "FIELD_AGENT"): String {
-        val json = """{"sub":"$id","email":"agent@example.com","role":"$role","exp":${System.currentTimeMillis() / 1000 + 3600}}"""
+    private fun token(id: Long, role: String = "FIELD_AGENT", exp: Long = System.currentTimeMillis() / 1000 + 3600): String {
+        val json = """{"sub":"$id","email":"agent@example.com","role":"$role","exp":$exp}"""
         return "header.${Base64.getUrlEncoder().withoutPadding().encodeToString(json.toByteArray())}.signature"
     }
 
@@ -23,13 +23,26 @@ class RequestOwnerTest {
         server.start()
         try {
             val client = OkHttpClient.Builder().addInterceptor(RequestOwnerInterceptor(JwtDecoder())).build()
-            for (jwt in listOf(token(2), token(1, "BUYER"), "invalid")) {
+            for (jwt in listOf(token(2), token(1, "BUYER"), token(2, exp = 1), "invalid")) {
                 val request = Request.Builder().url(server.url("/field-sync"))
                     .tag(AuthenticatedRequestOwner::class.java, AuthenticatedRequestOwner(1)).header("Authorization", "Bearer $jwt").build()
                 try { client.newCall(request).execute().close(); fail("Owner mismatch must stop the request") }
                 catch (_: IOException) { }
             }
             assertEquals(0, server.requestCount)
+        } finally { server.shutdown() }
+    }
+
+    @Test fun expiredTokenOfTheOwnerReachesTheServerSoItCanBeRefreshed() {
+        val server = MockWebServer()
+        server.start()
+        try {
+            server.enqueue(MockResponse().setResponseCode(401))
+            val request = Request.Builder().url(server.url("/field-sync"))
+                .tag(AuthenticatedRequestOwner::class.java, AuthenticatedRequestOwner(1)).header("Authorization", "Bearer ${token(1, exp = 1)}").build()
+            OkHttpClient.Builder().addInterceptor(RequestOwnerInterceptor(JwtDecoder())).build()
+                .newCall(request).execute().use { assertEquals(401, it.code) }
+            assertEquals(1, server.requestCount)
         } finally { server.shutdown() }
     }
 

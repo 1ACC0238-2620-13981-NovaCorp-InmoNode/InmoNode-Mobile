@@ -3,6 +3,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectTransformGestures
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -50,6 +51,11 @@ fun CadastralMapCanvas(lots: List<Lot>, matches: (Lot) -> Boolean, selectedId: L
         }; return result
     }
     val measurer = rememberTextMeasurer()
+    // The lot colours are the brand states in both themes; the ground, the filtered-out lots and the edges follow the theme.
+    val dark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    val ground = if (dark) MapGroundDark else MapGround
+    val filteredOut = if (dark) LotFilteredOutDark else LotFilteredOut
+    val edge = MaterialTheme.colorScheme.surface
     Canvas(modifier.semantics {
         contentDescription="Mapa catastral"
         customActions=lots.filter(matches).map { lot -> CustomAccessibilityAction("${lot.code} · ${lot.dimensions.area} m²") { onSelect(lot.id);true } }
@@ -61,22 +67,22 @@ fun CadastralMapCanvas(lots: List<Lot>, matches: (Lot) -> Boolean, selectedId: L
     }.pointerInput(lots) { detectTransformGestures { _, delta, scale, _ ->
         zoom=(zoom*scale).coerceIn(0.5f,8f); pan+=delta
     } }) {
-        drawRect(Color(0xFFE1E8DB))
+        drawRect(ground)
         for (lot in lots) {
             val rings=lot.polygon.map { ring -> ring.map { project(it,size.width,size.height) } }
             val path=Path().apply { fillType=PathFillType.EvenOdd
                 rings.forEach { ring -> ring.firstOrNull()?.let { moveTo(it.x,it.y) }; ring.drop(1).forEach { lineTo(it.x,it.y) }; close() } }
-            val color=when { !matches(lot) -> Color(0xFFD3D8CF)
+            val color=when { !matches(lot) -> filteredOut
                 lot.pendingReservationId!=null -> AlertYellow
                 lot.status==LotStatus.AVAILABLE -> LightGreen
                 lot.status==LotStatus.SOLD || lot.status==LotStatus.BLOCKED -> TerracottaOrange
                 else -> AlertYellow }
-            drawPath(path,color); drawPath(path,if(lot.id==selectedId) ForestGreen else Color.White,
+            drawPath(path,color); drawPath(path,if(lot.id==selectedId) ForestGreen else edge,
                 style=Stroke(if(lot.id==selectedId) 4.dp.toPx() else 1.5.dp.toPx()))
-            rings.firstOrNull()?.takeIf { it.isNotEmpty() }?.let { ring ->
-                val center=Offset(ring.map { it.x }.average().toFloat(),ring.map { it.y }.average().toFloat())
+            lot.polygon.firstOrNull()?.takeIf { it.isNotEmpty() }?.let { ring ->
+                val center=project(labelPoint(ring),size.width,size.height)
                 val text=measurer.measure(lot.code,TextStyle(fontFamily=Montserrat,fontSize=10.sp,
-                    color=if(color==TerracottaOrange) Color.White else PureBlack))
+                    color=when { color==TerracottaOrange -> Color.White; color==filteredOut&&dark -> OffWhite; else -> PureBlack }))
                 drawText(text,topLeft=center-Offset(text.size.width/2f,text.size.height/2f))
             }
         }
