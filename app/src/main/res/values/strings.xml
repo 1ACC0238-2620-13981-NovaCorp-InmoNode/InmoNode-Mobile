@@ -63,6 +63,9 @@
     <string name="field_document">Documento de identidad</string>
     <string name="field_name">Nombre completo</string>
     <string name="field_phone">Teléfono</string>
+    <string name="field_optional">Opcional</string>
+    <string name="prospect_document_help">De 8 a 12 letras o números</string>
+    <string name="prospect_marital_help">Requerido para el contrato preliminar</string>
     <string name="field_marital">Estado civil</string>
     <string name="portfolio_incomplete">Descarga incompleta</string>
     <string name="portfolio_preparing">Preparando jornada</string>

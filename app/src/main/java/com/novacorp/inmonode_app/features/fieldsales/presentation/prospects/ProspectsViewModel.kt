@@ -19,12 +19,15 @@ class ProspectsViewModel @Inject constructor(repository: ProspectRepository, pri
   .collect { p -> _uiState.update { it.copy(prospects=p,loaded=true) } } }
   viewModelScope.launch { connectivity.isOnline.collect { v -> _uiState.update { it.copy(offline=!v) } } } }
  fun query(v:String) = _uiState.update { it.copy(query=v) }
- fun name(v:String) { saved["name"]=v; _uiState.update { it.copy(name=v) } }
- fun document(v:String) { saved["document"]=v; _uiState.update { it.copy(document=v) } }
- fun phone(v:String) { saved["phone"]=v; _uiState.update { it.copy(phone=v) } }
+ fun name(v:String) { saved["name"]=v; _uiState.update { it.copy(name=v,nameError=null) } }
+ fun document(v:String) { saved["document"]=v; _uiState.update { it.copy(document=v,documentError=null) } }
+ fun phone(v:String) { saved["phone"]=v; _uiState.update { it.copy(phone=v,phoneError=null) } }
  fun marital(v:String) { saved["marital"]=v; _uiState.update { it.copy(maritalStatus=v) } }
  fun save() { if(_uiState.value.saving)return
   val s=_uiState.value
+  // Each invalid field shows its own error (M14); the repository checks the same rules again.
+  val nameError=ProspectRules.nameError(s.name); val documentError=ProspectRules.documentError(s.document); val phoneError=ProspectRules.phoneError(s.phone)
+  if(nameError!=null||documentError!=null||phoneError!=null) { _uiState.update { it.copy(nameError=nameError,documentError=documentError,phoneError=phoneError,errorMessage=null) }; return }
   viewModelScope.launch { _uiState.update { it.copy(saving=true,errorMessage=null) }
    register(s.document,s.name,s.phone,s.maritalStatus.ifBlank { null }).fold(
     { p -> _uiState.update { it.copy(saving=false,savedId=p.id) } },
