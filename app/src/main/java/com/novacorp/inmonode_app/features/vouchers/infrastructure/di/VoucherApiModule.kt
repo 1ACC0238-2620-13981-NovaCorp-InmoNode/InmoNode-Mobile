@@ -1,5 +1,6 @@
 package com.novacorp.inmonode_app.features.vouchers.infrastructure.di
 
+import com.novacorp.inmonode_app.features.vouchers.infrastructure.remote.IdentityDocumentService
 import com.novacorp.inmonode_app.features.vouchers.infrastructure.remote.VoucherService
 import com.novacorp.inmonode_app.core.di.SessionScopedApi
 import dagger.Module
@@ -13,4 +14,7 @@ import javax.inject.Singleton
 object VoucherApiModule {
     @Provides @Singleton
     fun service(@SessionScopedApi retrofit: Retrofit): VoucherService = retrofit.create(VoucherService::class.java)
+    @Provides @Singleton
+    fun identityDocumentService(@SessionScopedApi retrofit: Retrofit): IdentityDocumentService =
+        retrofit.create(IdentityDocumentService::class.java)
 }

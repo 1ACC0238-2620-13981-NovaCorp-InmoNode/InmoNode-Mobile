@@ -3,7 +3,9 @@ package com.novacorp.inmonode_app.features.vouchers.infrastructure.repositories
 import android.content.Context
 import com.novacorp.inmonode_app.core.database.InmoNodeDatabase
 import com.novacorp.inmonode_app.core.database.atomic
+import com.novacorp.inmonode_app.core.network.AuthenticatedRequestOwner
 import com.novacorp.inmonode_app.core.network.operationResult
+import com.novacorp.inmonode_app.core.network.requireBody
 import com.novacorp.inmonode_app.core.time.utcTimestamp
 import com.novacorp.inmonode_app.features.iam.infrastructure.local.FieldSession
 import com.novacorp.inmonode_app.features.vouchers.domain.IdentityDocument
@@ -11,7 +13,11 @@ import com.novacorp.inmonode_app.features.vouchers.domain.IdentityDocumentReposi
 import com.novacorp.inmonode_app.features.vouchers.infrastructure.image.ImageCompressor
 import com.novacorp.inmonode_app.features.vouchers.infrastructure.local.IdentityDocumentEntity
 import com.novacorp.inmonode_app.features.vouchers.infrastructure.local.toDomain
+import com.novacorp.inmonode_app.features.vouchers.infrastructure.remote.IdentityDocumentFileDto
+import com.novacorp.inmonode_app.features.vouchers.infrastructure.remote.IdentityDocumentService
+import com.novacorp.inmonode_app.features.vouchers.infrastructure.remote.VoucherFileUploader
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.NonCancellable
@@ -30,6 +36,8 @@ import javax.inject.Inject
 class IdentityDocumentRepositoryImpl @Inject constructor(
     private val database: InmoNodeDatabase,
     private val session: FieldSession,
+    private val service: IdentityDocumentService,
+    private val uploader: VoucherFileUploader,
     private val compressor: ImageCompressor,
     @ApplicationContext private val context: Context,
 ) : IdentityDocumentRepository {
@@ -56,7 +64,7 @@ class IdentityDocumentRepositoryImpl @Inject constructor(
             val id = UUID.randomUUID().toString()
             // Compressed right away (US-08): the stored file is the one that will be uploaded, retries included.
             val destination = compressor.compress(source, File(context.filesDir, "identity-documents/$owner/$id.jpg"),
-                subject = "documento de identidad")
+                subject = SUBJECT)
             val row = IdentityDocumentEntity(owner, id, reservationId, destination.path, capturedAt = utcTimestamp())
             try {
                 session.requireUnchanged(owner)
@@ -74,6 +82,46 @@ class IdentityDocumentRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun upload(documentId: String): Result<IdentityDocument> = operationResult {
+        mutationMutex.withLock {
+            val owner = session.requireOwner()
+            var row = requireNotNull(dao.find(owner, documentId)) { "No se encontró el documento de identidad." }
+            if (row.status == "SYNCED") return@withLock row.toDomain()
+            check(database.reservationDao().find(owner, row.reservationId)?.status == "SYNCED") {
+                "Sincroniza la separación antes de enviar su documento de identidad."
+            }
+            try {
+                val file = File(row.imagePath)
+                check(file.isFile && file.length() in 1 until ImageCompressor.MAX_BYTES) {
+                    "No se encontró la foto del documento de identidad. Vuelve a capturarla."
+                }
+                val request = IdentityDocumentFileDto(row.id, CONTENT_TYPE, file.length())
+                session.requireUnchanged(owner)
+                if (!row.uploaded) {
+                    val target = service.requestUpload(row.reservationId, request, AuthenticatedRequestOwner(owner)).requireBody()
+                    session.requireUnchanged(owner)
+                    uploader.upload(file, target, subject = SUBJECT)
+                    row = row.copy(uploaded = true)
+                    dao.upsert(row)
+                }
+                // A lost registration response only resends these values: the photo is not uploaded again.
+                session.requireUnchanged(owner)
+                val receipt = service.register(row.reservationId, request, AuthenticatedRequestOwner(owner)).requireBody()
+                check(receipt.documentId == row.id && receipt.transactionId == row.reservationId &&
+                    receipt.result in setOf("RECEIVED", "DUPLICATE")) { "El servidor no confirmó el documento de identidad esperado." }
+                session.requireUnchanged(owner)
+                row = row.copy(status = "SYNCED", errorMessage = null)
+                dao.upsert(row)
+                row.toDomain()
+            } catch (exception: CancellationException) {
+                throw exception
+            } catch (exception: Exception) {
+                dao.upsert(row.copy(errorMessage = exception.message ?: "No se pudo enviar el documento de identidad."))
+                throw exception
+            }
+        }
+    }
+
     override suspend fun discardCancelled(): Result<Unit> = operationResult {
         mutationMutex.withLock {
             val owner = session.requireOwner()
@@ -85,5 +133,10 @@ class IdentityDocumentRepositoryImpl @Inject constructor(
         }
     }
 
-    companion object { private const val MAX_CAPTURE_BYTES = 40L * 1024 * 1024 }
+    companion object {
+        private const val MAX_CAPTURE_BYTES = 40L * 1024 * 1024
+        /** ImageCompressor always writes a JPEG. */
+        private const val CONTENT_TYPE = "image/jpeg"
+        private const val SUBJECT = "documento de identidad"
+    }
 }

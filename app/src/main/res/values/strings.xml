@@ -188,6 +188,11 @@
         <item quantity="many">%d vouchers</item>
         <item quantity="other">%d vouchers</item>
     </plurals>
+    <plurals name="sync_result_identity_documents">
+        <item quantity="one">%d documento de identidad</item>
+        <item quantity="many">%d documentos de identidad</item>
+        <item quantity="other">%d documentos de identidad</item>
+    </plurals>
     <plurals name="sync_result_conflicts">
         <item quantity="one">%d separación tiene conflicto de disponibilidad: resuélvelo en la lista.</item>
         <item quantity="many">%d separaciones tienen conflicto de disponibilidad: resuélvelos en la lista.</item>

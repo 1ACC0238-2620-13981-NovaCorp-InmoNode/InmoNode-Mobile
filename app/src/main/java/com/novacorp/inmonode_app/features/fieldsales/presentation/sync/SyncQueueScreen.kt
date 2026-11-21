@@ -75,7 +75,7 @@ private fun BackgroundSyncStatus(s:SyncQueueUiState) {
 }
 
 /**
- * What "Sincronizar ahora" sent, vouchers included. When the automatic sync had already sent everything, it says so
+ * What "Sincronizar ahora" sent, vouchers and identity documents included. When the automatic sync had already sent everything, it says so
  * instead of reporting zero records sent.
  */
 @Composable
@@ -84,7 +84,8 @@ private fun syncResultText(r:SyncSummary):String {
  val sent=listOfNotNull(
   r.prospectsSynced.takeIf { it>0 }?.let { pluralStringResource(R.plurals.sync_result_prospects,it,it) },
   r.reservationsSynced.takeIf { it>0 }?.let { pluralStringResource(R.plurals.sync_result_reservations,it,it) },
-  r.vouchersUploaded.takeIf { it>0 }?.let { pluralStringResource(R.plurals.sync_result_vouchers,it,it) })
+  r.vouchersUploaded.takeIf { it>0 }?.let { pluralStringResource(R.plurals.sync_result_vouchers,it,it) },
+  r.identityDocumentsUploaded.takeIf { it>0 }?.let { pluralStringResource(R.plurals.sync_result_identity_documents,it,it) })
  val and=stringResource(R.string.sync_result_and)
  val list=if(sent.size<2) sent.joinToString() else sent.dropLast(1).joinToString(", ")+" $and "+sent.last()
  return listOfNotNull(list.takeIf { it.isNotEmpty() }?.let { stringResource(R.string.sync_result_sent,it) },

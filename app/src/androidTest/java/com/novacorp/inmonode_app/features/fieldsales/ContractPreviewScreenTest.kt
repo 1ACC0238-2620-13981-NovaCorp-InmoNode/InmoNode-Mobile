@@ -66,6 +66,7 @@ class ContractPreviewScreenTest {
     private val identityDocuments = object : IdentityDocumentRepository {
         override fun observeDocuments() = flowOf(emptyList<IdentityDocument>())
         override suspend fun capture(reservationId: String, imagePath: String) = error("unused")
+        override suspend fun upload(documentId: String) = error("unused")
         override suspend fun discardCancelled() = Result.success(Unit)
     }
 

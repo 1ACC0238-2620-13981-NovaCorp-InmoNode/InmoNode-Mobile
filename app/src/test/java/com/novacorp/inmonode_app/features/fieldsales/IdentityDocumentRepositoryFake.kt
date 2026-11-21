@@ -12,4 +12,5 @@ internal class IdentityDocumentRepositoryFake(private val discardResult: Result<
     override suspend fun discardCancelled(): Result<Unit> { discards++; return discardResult }
     override fun observeDocuments(): Flow<List<IdentityDocument>> = documents
     override suspend fun capture(reservationId: String, imagePath: String): Result<IdentityDocument> = error("unused")
+    override suspend fun upload(documentId: String): Result<IdentityDocument> = error("unused")
 }
