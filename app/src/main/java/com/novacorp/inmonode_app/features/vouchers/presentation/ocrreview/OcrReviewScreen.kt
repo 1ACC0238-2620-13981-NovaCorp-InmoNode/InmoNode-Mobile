@@ -38,7 +38,7 @@ fun OcrReviewScreen(modifier:Modifier=Modifier,viewModel:OcrReviewViewModel=hilt
    isError=errors.any { it==OcrFieldError.CODE_MISSING||it==OcrFieldError.CODE_TOO_LONG },supportingText=errors.messageFor(OcrFieldError.CODE_MISSING,OcrFieldError.CODE_TOO_LONG))
   FieldError(s.errorMessage)
   if(s.errorMessage!=null) TextButton(onClick=viewModel::process,enabled=!s.working) { Text(stringResource(R.string.voucher_process)) }
-  OutlinedButton(onClick={s.voucher?.let { onRecapture(it.reservationId) }},modifier=Modifier.fillMaxWidth(),enabled=!s.working) { Text(stringResource(R.string.voucher_capture)) }
+  SecondaryButton(stringResource(R.string.voucher_capture),!s.working) { s.voucher?.let { onRecapture(it.reservationId) } }
   PrimaryButton(stringResource(R.string.field_continue),!s.working&&s.voucher?.status!=VoucherStatus.RECAPTURE_REQUIRED&&s.voucher!=null,viewModel::save)
  }
 }

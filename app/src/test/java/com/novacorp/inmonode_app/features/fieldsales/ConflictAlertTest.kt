@@ -19,7 +19,7 @@ class ConflictAlertTest {
 
     @Test fun theLostLotIsNamedWithItsCodeAndTheAmountWithItsCurrency() {
         assertEquals("N-02", state.lotLabel(2))
-        assertEquals("PEN 500.00", state.amountLabel(conflict(2)))
+        assertEquals("S/ 500.00", state.amountLabel(conflict(2)))
     }
 
     @Test fun aLotGoneFromTheCatalogStillHasALabelAndTheAmountIsKept() {

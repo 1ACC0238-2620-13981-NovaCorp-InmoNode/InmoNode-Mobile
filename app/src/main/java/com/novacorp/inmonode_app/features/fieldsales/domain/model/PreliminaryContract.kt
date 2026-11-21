@@ -1,5 +1,6 @@
 package com.novacorp.inmonode_app.features.fieldsales.domain.model
 
+import com.novacorp.inmonode_app.core.format.formatMoney
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.Instant
@@ -36,7 +37,7 @@ data class PreliminaryContract(val reservation: Reservation?, val prospect: Pros
         val project = requireNotNull(project)
         val rules = project.financingRules
         val terms = reservation.terms
-        fun money(value: BigDecimal) = "${lot.currency} ${value.setScale(2, RoundingMode.DOWN).toPlainString()}"
+        fun money(value: BigDecimal) = formatMoney(lot.currency, value)
         fun percent(value: BigDecimal) = value.stripTrailingZeros().toPlainString()
         return mapOf(
             "buyer.name" to prospect.fullName.trim(),

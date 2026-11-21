@@ -27,13 +27,13 @@ class NegotiationTermsTest {
 
     @Test
     fun rejectsNegativeDiscountNamingTheValidRange() {
-        assertEquals("El descuento debe estar entre PEN 0.00 y PEN 44999.99.",
+        assertEquals("El descuento debe estar entre S/ 0.00 y S/ 44,999.99.",
             NegotiationTerms(discount = BigDecimal("-1")).validationError(price, "PEN"))
     }
 
     @Test
     fun rejectsDiscountEqualToOrAboveThePrice() {
-        val expected = "El descuento debe estar entre PEN 0.00 y PEN 44999.99."
+        val expected = "El descuento debe estar entre S/ 0.00 y S/ 44,999.99."
         assertEquals(expected, NegotiationTerms(discount = BigDecimal("45000")).validationError(price, "PEN"))
         assertEquals(expected, NegotiationTerms(discount = BigDecimal("50000")).validationError(price, "PEN"))
     }

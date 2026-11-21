@@ -18,8 +18,7 @@ fun ProspectListScreen(modifier: Modifier=Modifier,viewModel: ProspectsViewModel
   OfflineBanner(s.offline)
   Column(Modifier.padding(16.dp),verticalArrangement=Arrangement.spacedBy(8.dp)) {
    Text(stringResource(R.string.prospects_title),style=MaterialTheme.typography.headlineMedium)
-   Row { TextButton(onClick={}) { Text(stringResource(R.string.nav_prospects)) }
-    TextButton(onClick=onSeparations) { Text(stringResource(R.string.separations_title)) } }
+   SegmentedTabs(listOf(stringResource(R.string.nav_prospects),stringResource(R.string.separations_title)),0) { onSeparations() }
    OutlinedTextField(s.query,viewModel::query,label={Text(stringResource(R.string.field_search))},modifier=Modifier.fillMaxWidth(),singleLine=true,shape=androidx.compose.foundation.shape.RoundedCornerShape(8.dp))
    FieldError(s.errorMessage)
   }

@@ -17,6 +17,6 @@ fun ReservationConfirmationScreen(modifier:Modifier=Modifier,viewModel:Reservati
   FieldValue(stringResource(R.string.reservation_final_price),money(s.lot?.currency,s.lot?.price?.let { s.reservation?.terms?.finalPrice(it) }))
   FieldValue(stringResource(R.string.field_amount),money(s.lot?.currency,s.reservation?.initialAmount))
   PrimaryButton(stringResource(R.string.nav_sync),onClick=onSync)
-  PrimaryButton(stringResource(R.string.nav_map),onClick=onMap)
+  SecondaryButton(stringResource(R.string.nav_map),onClick=onMap)
  }
 }

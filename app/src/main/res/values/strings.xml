@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">InmoNode-App</string>
+    <string name="app_name">InmoNode</string>
     <string name="coming_soon_message">En construcción. Esta pantalla llega con %1$s.</string>
 
     <!-- Bottom navigation -->
@@ -63,6 +63,9 @@
     <string name="field_document">Documento de identidad</string>
     <string name="field_name">Nombre completo</string>
     <string name="field_phone">Teléfono</string>
+    <string name="field_optional">Opcional</string>
+    <string name="prospect_document_help">De 8 a 12 letras o números</string>
+    <string name="prospect_marital_help">Requerido para el contrato preliminar</string>
     <string name="field_marital">Estado civil</string>
     <string name="portfolio_incomplete">Descarga incompleta</string>
     <string name="portfolio_preparing">Preparando jornada</string>
@@ -81,7 +84,7 @@
     <string name="map_no_results">Sin resultados para estos filtros</string>
     <string name="map_no_results_help">Ajusta el metraje o limpia los filtros para ver otros lotes.</string>
     <string name="map_download">Descargar portafolio</string>
-    <string name="map_select_project">Seleccionar proyecto</string>
+    <string name="field_project">Proyecto</string>
     <string name="map_center">Centrar mapa</string>
     <string name="lot_reserve">Separar lote</string>
     <string name="lot_simulate">Simular financiamiento</string>
@@ -114,7 +117,7 @@
     <string name="reservation_cancel_draft">Descartar borrador</string>
     <string name="reservation_negotiation">Condiciones de negociación (opcional)</string>
     <string name="reservation_discount">Descuento autorizado</string>
-    <string name="reservation_discount_range">Entre %1$s 0.00 y %1$s %2$s</string>
+    <string name="reservation_discount_range">Entre %1$s y %2$s</string>
     <string name="reservation_bonus">Bono o beneficio</string>
     <string name="reservation_notes">Observaciones</string>
     <string name="reservation_final_price">Precio final</string>
@@ -226,6 +229,9 @@
     <string name="wizard_ocr">Datos OCR</string>
     <string name="wizard_identity">Documento</string>
     <string name="wizard_contract">Contrato</string>
+    <string name="wizard_step_done">Completado</string>
+    <string name="wizard_step_current">Paso actual</string>
+    <string name="wizard_step_pending">Pendiente</string>
     <string name="status_verifying">En verificación</string>
     <string name="status_verified">Verificada</string>
     <string name="status_rejected">Voucher rechazado</string>

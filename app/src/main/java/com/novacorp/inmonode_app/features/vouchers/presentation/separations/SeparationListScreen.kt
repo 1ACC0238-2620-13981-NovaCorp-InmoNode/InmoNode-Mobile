@@ -1,4 +1,7 @@
 package com.novacorp.inmonode_app.features.vouchers.presentation.separations
+
+import com.novacorp.inmonode_app.core.format.formatMoney
+import com.novacorp.inmonode_app.core.format.formatAmount
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -14,10 +17,9 @@ import com.novacorp.inmonode_app.core.designsystem.components.*
 @Composable
 fun SeparationListScreen(modifier:Modifier=Modifier,viewModel:SeparationsViewModel=hiltViewModel(),onProspects:()->Unit,onDetail:(String)->Unit) {
  val s by viewModel.uiState.collectAsStateWithLifecycle()
- Column(modifier.fillMaxSize().padding(16.dp),verticalArrangement=Arrangement.spacedBy(16.dp)) {
+ Column(modifier.fillMaxSize().padding(16.dp),verticalArrangement=Arrangement.spacedBy(8.dp)) {
   Text(stringResource(R.string.prospects_title),style=MaterialTheme.typography.headlineMedium)
-  Row { TextButton(onClick=onProspects) { Text(stringResource(R.string.nav_prospects)) }
-   TextButton(onClick={}) { Text(stringResource(R.string.separations_title)) } }
+  SegmentedTabs(listOf(stringResource(R.string.nav_prospects),stringResource(R.string.separations_title)),1) { onProspects() }
   Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween) {
    TextButton(onClick=viewModel::refreshList,enabled=!s.loading) { Text(stringResource(R.string.field_refresh)) }
    if(s.loading)CircularProgressIndicator(modifier=Modifier.size(24.dp))
@@ -28,7 +30,7 @@ fun SeparationListScreen(modifier:Modifier=Modifier,viewModel:SeparationsViewMod
    items(s.reservations,key={it.id}) { row -> OutlinedCard(onClick={onDetail(row.id)},modifier=Modifier.fillMaxWidth()) {
     Column(Modifier.padding(16.dp),verticalArrangement=Arrangement.spacedBy(8.dp)) {
      Text(s.lot(row.lotId)?.code?:row.lotId.toString(),style=MaterialTheme.typography.headlineSmall)
-     Text("${s.prospects.firstOrNull { it.id==row.prospectId }?.fullName.orEmpty()} · ${row.initialAmount}")
+     Text("${s.prospects.firstOrNull { it.id==row.prospectId }?.fullName.orEmpty()} · ${s.lot(row.lotId)?.let { formatMoney(it.currency,row.initialAmount) }?:formatAmount(row.initialAmount)}")
      StatusChip(s.summaries[row.id]?.status?:row.serverStatus?:row.status.name)
      // Only the pending ones are flagged in the list; the detail shows every state.
      s.identityDocumentState(row)?.takeIf { it==IdentityDocumentState.PENDING }?.let { IdentityDocumentLabel(it) }

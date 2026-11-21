@@ -1,4 +1,6 @@
 package com.novacorp.inmonode_app.features.fieldsales.presentation.sync
+
+import com.novacorp.inmonode_app.core.format.formatMoney
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -17,7 +19,6 @@ fun ConflictScreen(modifier:Modifier=Modifier,viewModel:SyncQueueViewModel=hiltV
  val s by viewModel.uiState.collectAsStateWithLifecycle()
  var selectedId by rememberSaveable { mutableStateOf<Long?>(null) }
  var projectId by rememberSaveable { mutableStateOf<Long?>(null) }
- var expanded by remember { mutableStateOf(false) }
  val original=s.reservations.firstOrNull { it.id==s.conflictId }
  val project=s.portfolio.projects.firstOrNull { it.id==(projectId?:s.lot(original?.lotId?:0)?.projectId) }?:s.portfolio.projects.firstOrNull()
  val selected=project?.lots?.firstOrNull { it.id==selectedId&&it.isAvailable() }
@@ -33,13 +34,10 @@ fun ConflictScreen(modifier:Modifier=Modifier,viewModel:SyncQueueViewModel=hiltV
    Text(listOfNotNull(prospect?.fullName,prospect?.document).joinToString(" · "),style=MaterialTheme.typography.titleMedium)
    Text(stringResource(R.string.sync_reassign_help,s.amountLabel(row)),style=MaterialTheme.typography.bodySmall)
   }
-  Box {
-   OutlinedButton(onClick={expanded=true},modifier=Modifier.fillMaxWidth()) { Text(project?.name.orEmpty()) }
-   DropdownMenu(expanded,{expanded=false}) { s.portfolio.projects.forEach { p -> DropdownMenuItem(text={Text(p.name)},onClick={projectId=p.id;selectedId=null;expanded=false}) } }
-  }
+  FieldDropdown(stringResource(R.string.field_project),project?.name.orEmpty(),s.portfolio.projects,{ it.name },{ projectId=it.id;selectedId=null })
   CadastralMapCanvas(project?.lots.orEmpty(),{it.isAvailable()},selectedId,Modifier.weight(1f).fillMaxWidth(),onSelect={selectedId=it})
   if(project!=null&&project.lots.none { it.isAvailable() }) Text(stringResource(R.string.sync_reassign_none),style=MaterialTheme.typography.bodyMedium)
-  selected?.let { Text("${it.code} · ${it.dimensions.area} m² · ${it.currency} ${it.price}") }
+  selected?.let { Text("${it.code} · ${it.dimensions.area} m² · ${formatMoney(it.currency,it.price)}") }
   FieldError(s.errorMessage)
   PrimaryButton(stringResource(R.string.field_confirm),selected!=null&&!s.working) { selected?.let { viewModel.reassign(it.id) } }
  }

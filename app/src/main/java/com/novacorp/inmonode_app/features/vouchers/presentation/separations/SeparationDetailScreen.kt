@@ -1,4 +1,7 @@
 package com.novacorp.inmonode_app.features.vouchers.presentation.separations
+
+import com.novacorp.inmonode_app.core.format.formatMoney
+import com.novacorp.inmonode_app.core.format.formatAmount
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -29,7 +32,7 @@ fun SeparationDetailScreen(modifier:Modifier=Modifier,viewModel:SeparationsViewM
   if(row==null) Text(stringResource(R.string.field_empty)) else {
    Text(s.lot(row.lotId)?.code.orEmpty(),style=MaterialTheme.typography.headlineSmall)
    FieldValue(stringResource(R.string.field_name),s.prospects.firstOrNull { it.id==row.prospectId }?.fullName.orEmpty())
-   FieldValue(stringResource(R.string.field_amount),row.initialAmount.toPlainString())
+   FieldValue(stringResource(R.string.field_amount),s.lot(row.lotId)?.let { formatMoney(it.currency,row.initialAmount) }?:formatAmount(row.initialAmount))
    StatusChip(s.evidences?.status?:row.serverStatus?:row.status.name)
    (s.evidences?.waitingUntil?:row.blockedUntil)?.let { until ->
     val remaining=runCatching { java.time.Duration.between(now,Instant.parse(until)).seconds.coerceAtLeast(0) }.getOrNull()
@@ -46,7 +49,7 @@ fun SeparationDetailScreen(modifier:Modifier=Modifier,viewModel:SeparationsViewM
     if(state==IdentityDocumentState.PENDING) PrimaryButton(stringResource(R.string.identity_document_attach)) { onIdentityDocument(row.id) }
     else if(document?.replaceable==true) TextButton(onClick={onIdentityDocument(row.id)}) { Text(stringResource(R.string.identity_document_retake)) }
    }
-   OutlinedButton(onClick={onContract(row.id)},modifier=Modifier.fillMaxWidth()) { Text(stringResource(R.string.reservation_contract)) }
+   SecondaryButton(stringResource(R.string.reservation_contract)) { onContract(row.id) }
    if(s.loading)LinearProgressIndicator(modifier=Modifier.fillMaxWidth())
    FieldError(s.errorMessage)
    if(s.errorMessage!=null)PrimaryButton(stringResource(R.string.field_retry),onClick=viewModel::retry)
@@ -56,7 +59,7 @@ fun SeparationDetailScreen(modifier:Modifier=Modifier,viewModel:SeparationsViewM
     if(result.evidences.isEmpty())Text(stringResource(R.string.field_empty))
     result.evidences.forEach { evidence -> OutlinedCard(Modifier.fillMaxWidth()) {
      Column(Modifier.padding(16.dp),verticalArrangement=Arrangement.spacedBy(8.dp)) {
-      Text("${evidence.currency} ${evidence.amount} · ${evidence.operationCode}",style=MaterialTheme.typography.titleSmall)
+      Text("${formatMoney(evidence.currency,evidence.amount)} · ${evidence.operationCode}",style=MaterialTheme.typography.titleSmall)
       Text(evidence.operationDate);StatusChip(evidence.status);evidence.rejectionReason?.let { FieldError(it) }
       if(evidence.downloadUrl!=null&&evidence.downloadExpiresAt?.let { runCatching { Instant.parse(it)>Instant.now() }.getOrDefault(false) }==true)
        TextButton(onClick={uri.openUri(evidence.downloadUrl)}) { Text(stringResource(R.string.separation_download)) }

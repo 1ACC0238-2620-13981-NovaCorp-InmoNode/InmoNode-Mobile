@@ -97,7 +97,7 @@ class FieldPresentationTest {
   Dispatchers.setMain(StandardTestDispatcher(testScheduler))
   try { val vm=wizard(PortfolioFake(),PeopleFake(),ReservationsFake(),SavedStateHandle(mapOf("lotId" to 1L)))
    runCurrent();vm.discount("10000")
-   assertEquals("El descuento debe estar entre PEN 0.00 y PEN 9999.99.",vm.uiState.value.discountError)
+   assertEquals("El descuento debe estar entre S/ 0.00 y S/ 9,999.99.",vm.uiState.value.discountError)
    assertNull(vm.uiState.value.finalPrice);vm.viewModelScope.cancel()
   } finally { Dispatchers.resetMain() }
  }
@@ -119,8 +119,8 @@ class FieldPresentationTest {
   } finally { Dispatchers.resetMain() }
  }
  @Test fun contractAmountsShowCurrencyAndTwoDecimals() {
-  assertEquals("PEN 500.00",money("PEN",BigDecimal("500")))
-  assertEquals("PEN 42000.50",money("PEN",BigDecimal("42000.5")))
+  assertEquals("S/ 500.00",money("PEN",BigDecimal("500")))
+  assertEquals("S/ 42,000.50",money("PEN",BigDecimal("42000.5")))
   assertEquals("",money(null,BigDecimal.ONE));assertEquals("",money("PEN",null))
  }
  @Test fun removedLotInvalidatesDisplayedSimulation()=runTest {

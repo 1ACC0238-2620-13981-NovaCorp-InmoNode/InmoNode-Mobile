@@ -17,7 +17,7 @@ import com.novacorp.inmonode_app.features.fieldsales.presentation.map.components
 fun CadastralMapScreen(modifier: Modifier=Modifier, viewModel: CadastralMapViewModel=hiltViewModel(),
     onDownload: () -> Unit, onSimulate: (Long) -> Unit, onReserve: (Long) -> Unit) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    var expanded by remember { mutableStateOf(false) }; var reset by remember { mutableIntStateOf(0) }
+    var reset by remember { mutableIntStateOf(0) }
     var initialDownloadOpened by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(false) }
     LaunchedEffect(state.loaded,state.connectivityKnown) {
         if(state.loaded&&state.connectivityKnown&&!initialDownloadOpened) {
@@ -29,13 +29,7 @@ fun CadastralMapScreen(modifier: Modifier=Modifier, viewModel: CadastralMapViewM
         OfflineBanner(state.offline)
         Column(Modifier.padding(horizontal=16.dp,vertical=16.dp)) {
             Text(stringResource(R.string.cadastral_map_title),style=MaterialTheme.typography.headlineMedium)
-            Box {
-                OutlinedButton(onClick={expanded=true},modifier=Modifier.fillMaxWidth()) {
-                    Text(state.project?.name ?: stringResource(R.string.map_select_project)) }
-                DropdownMenu(expanded,onDismissRequest={expanded=false}) {
-                    state.portfolio.projects.forEach { project -> DropdownMenuItem(text={Text(project.name)},onClick={viewModel.project(project.id);expanded=false}) }
-                }
-            }
+            FieldDropdown(stringResource(R.string.field_project),state.project?.name.orEmpty(),state.portfolio.projects,{ it.name },{ viewModel.project(it.id) })
             val maximum=(state.project?.lots?.maxOfOrNull { it.dimensions.area.toFloat() } ?: 1f).coerceAtLeast(1f)
             LotFilterBar(state.availableOnly,state.areaFilter,state.minArea.coerceIn(0f,maximum)..state.maxArea.coerceIn(0f,maximum),maximum,
                 viewModel::available,viewModel::filter,viewModel::area)
