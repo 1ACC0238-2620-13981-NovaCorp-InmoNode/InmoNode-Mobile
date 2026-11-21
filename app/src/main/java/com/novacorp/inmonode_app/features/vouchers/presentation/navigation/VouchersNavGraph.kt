@@ -30,5 +30,6 @@ fun NavGraphBuilder.vouchersNavGraph(navController:NavHostController) {
   }) }
  composable<SeparationListRoute> { SeparationListScreen(onProspects={navController.popBackStack()},onDetail={navController.navigate(SeparationDetailRoute(it))}) }
  composable<SeparationDetailRoute> { SeparationDetailScreen(onBack={navController.popBackStack()},
-  onReplace={navController.navigate(VoucherCaptureRoute(it,true))},onContract={navController.navigate(ContractRoute(it,true))}) }
+  onReplace={navController.navigate(VoucherCaptureRoute(it,true))},onContract={navController.navigate(ContractRoute(it,true))},
+  onIdentityDocument={navController.navigate(IdentityDocumentCaptureRoute(it,inWizard=false))}) }
 }

@@ -252,6 +252,11 @@
     <string name="identity_document_step">Paso 4 de 5 (opcional)</string>
     <string name="identity_document_later">Se enviará en la próxima sincronización.</string>
     <string name="identity_document_skip">Omitir</string>
+    <string name="identity_document_pending">Documento de identidad pendiente</string>
+    <string name="identity_document_waiting">Documento de identidad por enviar</string>
+    <string name="identity_document_sent">Documento de identidad enviado</string>
+    <string name="identity_document_attach">Adjuntar documento de identidad</string>
+    <string name="identity_document_retake">Volver a capturar el documento de identidad</string>
     <string name="prospect_saved_help">Los datos están guardados en el dispositivo y se enviarán automáticamente cuando haya conexión.</string>
     <string name="portfolio_background">Continuar en segundo plano</string>
     <string name="simulation_minimum">Inicial mínima</string>

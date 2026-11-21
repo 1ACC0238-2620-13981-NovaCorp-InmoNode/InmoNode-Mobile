@@ -8,9 +8,10 @@ import kotlinx.coroutines.Job
 import com.novacorp.inmonode_app.features.fieldsales.domain.repositories.*
 import com.novacorp.inmonode_app.features.fieldsales.domain.model.ReservationStatus
 import com.novacorp.inmonode_app.features.vouchers.application.GetPaymentEvidencesUseCase
+import com.novacorp.inmonode_app.features.vouchers.domain.IdentityDocumentRepository
 @HiltViewModel
 class SeparationsViewModel @Inject constructor(reservations:ReservationRepository,prospects:ProspectRepository,portfolio:PortfolioRepository,
- private val getEvidences:GetPaymentEvidencesUseCase,saved:SavedStateHandle):ViewModel() {
+ identityDocuments:IdentityDocumentRepository,private val getEvidences:GetPaymentEvidencesUseCase,saved:SavedStateHandle):ViewModel() {
  private val _uiState=MutableStateFlow(SeparationsUiState(selectedId=saved["reservationId"]))
  val uiState=_uiState.asStateFlow()
  private var requested=false
@@ -30,7 +31,9 @@ class SeparationsViewModel @Inject constructor(reservations:ReservationRepositor
    _uiState.update { it.copy(loading=false) }
   }
  }
- init { viewModelScope.launch { combine(reservations.observeReservations(),prospects.observeProspects(),portfolio.observePortfolio()) { rows,people,p ->
+ init { viewModelScope.launch { identityDocuments.observeDocuments().catch { e -> _uiState.update { it.copy(errorMessage=e.message) } }
+  .collect { rows -> _uiState.update { it.copy(documents=rows.associateBy { d -> d.reservationId }) } } }
+  viewModelScope.launch { combine(reservations.observeReservations(),prospects.observeProspects(),portfolio.observePortfolio()) { rows,people,p ->
   Triple(rows,people,p) }.catch { e -> _uiState.update { it.copy(errorMessage=e.message) } }.collect { (rows,people,p) ->
    _uiState.update { it.copy(reservations=rows.filter { r -> r.status!=ReservationStatus.CANCELLED&&r.status!=ReservationStatus.DRAFT },prospects=people,portfolio=p) }
    if(!requested&&_uiState.value.selected?.status==ReservationStatus.SYNCED) { requested=true;retry() };loadList()
