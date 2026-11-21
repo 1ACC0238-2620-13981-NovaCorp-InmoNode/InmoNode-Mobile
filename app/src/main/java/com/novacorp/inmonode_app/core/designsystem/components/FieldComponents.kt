@@ -8,6 +8,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.novacorp.inmonode_app.R
 
@@ -48,6 +49,6 @@ fun FieldError(message: String?) {
 fun FieldValue(label: String, value: String) {
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
         Text(label, modifier = Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium)
-        Text(value, modifier = Modifier.weight(1f), style = MaterialTheme.typography.titleSmall)
+        Text(value, modifier = Modifier.weight(1f), style = MaterialTheme.typography.titleSmall, textAlign = TextAlign.End)
     }
 }
