@@ -26,7 +26,7 @@ fun ReservationWizardScreen(modifier:Modifier=Modifier,viewModel:ReservationWiza
   Spacer(Modifier.height(16.dp))
  }) {
   WizardStepper(1)
-  s.lot?.let { lot -> ElevatedCard { Column(Modifier.padding(16.dp)) {
+  s.lot?.let { lot -> ElevatedCard(Modifier.fillMaxWidth()) { Column(Modifier.padding(16.dp)) {
    Text(s.project?.name.orEmpty(),style=MaterialTheme.typography.bodySmall)
    Text(lot.code,style=MaterialTheme.typography.headlineSmall);Text("${lot.dimensions.area} m² · ${formatMoney(lot.currency,lot.price)}") } } }
   Text(stringResource(R.string.reservation_prospect),style=MaterialTheme.typography.titleMedium)
