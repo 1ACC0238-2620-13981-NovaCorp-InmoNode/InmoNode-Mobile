@@ -226,6 +226,9 @@
     <string name="wizard_ocr">Datos OCR</string>
     <string name="wizard_identity">Documento</string>
     <string name="wizard_contract">Contrato</string>
+    <string name="wizard_step_done">Completado</string>
+    <string name="wizard_step_current">Paso actual</string>
+    <string name="wizard_step_pending">Pendiente</string>
     <string name="status_verifying">En verificación</string>
     <string name="status_verified">Verificada</string>
     <string name="status_rejected">Voucher rechazado</string>
