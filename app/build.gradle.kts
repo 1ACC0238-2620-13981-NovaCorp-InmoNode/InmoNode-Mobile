@@ -118,6 +118,8 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
+    // T62 spike: SQLCipher is only measured from androidTest; the app does not ship it.
+    androidTestImplementation(libs.sqlcipher.android)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
 }
