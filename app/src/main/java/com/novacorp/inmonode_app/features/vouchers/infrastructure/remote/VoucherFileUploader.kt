@@ -24,7 +24,8 @@ class VoucherFileUploader @Inject constructor() {
     private val client = OkHttpClient.Builder().followRedirects(false).followSslRedirects(false)
         .callTimeout(60, TimeUnit.SECONDS).build()
 
-    suspend fun upload(file: File, target: UploadUrlResponseDto) {
+    /** @param subject what the file shows, as the error messages name it ("voucher", "documento de identidad") */
+    suspend fun upload(file: File, target: UploadUrlResponseDto, subject: String = "voucher") {
         val url = target.uploadUrl.toHttpUrl()
         require(url.isHttps && url.username.isEmpty() && url.password.isEmpty()) { "La URL de carga no es segura." }
         require(Instant.parse(target.expiresAt).isAfter(Instant.now())) { "La URL de carga venció. Reintenta la sincronización." }
@@ -39,13 +40,13 @@ class VoucherFileUploader @Inject constructor() {
             continuation.invokeOnCancellation { call.cancel() }
             call.enqueue(object : Callback {
                 override fun onFailure(call: Call, e: IOException) {
-                    if (continuation.isActive) continuation.resumeWithException(IOException("No se pudo subir el voucher. Puedes reintentar.", e))
+                    if (continuation.isActive) continuation.resumeWithException(IOException("No se pudo subir el $subject. Puedes reintentar.", e))
                 }
                 override fun onResponse(call: Call, response: Response) {
                     response.use {
                         if (!continuation.isActive) return
                         if (it.isSuccessful) continuation.resume(Unit)
-                        else continuation.resumeWithException(IOException("La carga del voucher falló (${it.code}). Reintenta la sincronización."))
+                        else continuation.resumeWithException(IOException("La carga del $subject falló (${it.code}). Reintenta la sincronización."))
                     }
                 }
             })

@@ -14,7 +14,8 @@ import com.novacorp.inmonode_app.core.designsystem.components.*
 import androidx.compose.ui.platform.LocalUriHandler
 import java.time.Instant
 @Composable
-fun SeparationDetailScreen(modifier:Modifier=Modifier,viewModel:SeparationsViewModel=hiltViewModel(),onBack:()->Unit,onReplace:(String)->Unit,onContract:(String)->Unit) {
+fun SeparationDetailScreen(modifier:Modifier=Modifier,viewModel:SeparationsViewModel=hiltViewModel(),onBack:()->Unit,onReplace:(String)->Unit,onContract:(String)->Unit,
+ onIdentityDocument:(String)->Unit) {
  val s by viewModel.uiState.collectAsStateWithLifecycle()
  val uri=LocalUriHandler.current
  var now by remember { mutableStateOf(Instant.now()) }
@@ -39,6 +40,12 @@ fun SeparationDetailScreen(modifier:Modifier=Modifier,viewModel:SeparationsViewM
    }
    Text(stringResource(R.string.separation_registered),style=MaterialTheme.typography.titleMedium)
    Text(displayTimestamp(row.reservedAt),style=MaterialTheme.typography.bodySmall)
+   s.identityDocumentState(row)?.let { state -> val document=s.documents[row.id]
+    IdentityDocumentLabel(state)
+    if(state==IdentityDocumentState.WAITING) document?.errorMessage?.let { FieldError(it) }
+    if(state==IdentityDocumentState.PENDING) PrimaryButton(stringResource(R.string.identity_document_attach)) { onIdentityDocument(row.id) }
+    else if(document?.replaceable==true) TextButton(onClick={onIdentityDocument(row.id)}) { Text(stringResource(R.string.identity_document_retake)) }
+   }
    OutlinedButton(onClick={onContract(row.id)},modifier=Modifier.fillMaxWidth()) { Text(stringResource(R.string.reservation_contract)) }
    if(s.loading)LinearProgressIndicator(modifier=Modifier.fillMaxWidth())
    FieldError(s.errorMessage)
@@ -59,4 +66,12 @@ fun SeparationDetailScreen(modifier:Modifier=Modifier,viewModel:SeparationsViewM
    }
   }
  }
+}
+
+/** US-59: pending stands out, since the buyer's file is incomplete until the photo is attached. */
+@Composable
+internal fun IdentityDocumentLabel(state:IdentityDocumentState) {
+ Text(stringResource(when(state) { IdentityDocumentState.PENDING -> R.string.identity_document_pending
+  IdentityDocumentState.WAITING -> R.string.identity_document_waiting;IdentityDocumentState.SENT -> R.string.identity_document_sent }),
+  style=MaterialTheme.typography.bodyMedium,color=if(state==IdentityDocumentState.PENDING) MaterialTheme.colorScheme.error else LocalContentColor.current)
 }

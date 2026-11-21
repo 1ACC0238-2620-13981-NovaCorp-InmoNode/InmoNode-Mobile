@@ -60,7 +60,7 @@ fun ContractPreviewStep(modifier:Modifier=Modifier,viewModel:ReservationWizardVi
   if(ready!=null) IconButton(onClick={ shareContract(context,ready.pdf.file,shareTitle) }) {
    Icon(painterResource(R.drawable.ic_share),contentDescription=shareTitle) } }) {
   // Opened from Separaciones the contract is read-only, outside the wizard, so it shows no wizard steps.
-  if(!readOnly) WizardStepper(4)
+  if(!readOnly) WizardStepper(5)
   if(missing.isNotEmpty()&&!(completing&&onlyMarital)) MissingDataDialog(missing,onlyMarital,onComplete={completing=true},onCancel=onBack)
   if(ContractField.MARITAL_STATUS in missing) {
    FieldError(stringResource(R.string.contract_missing))

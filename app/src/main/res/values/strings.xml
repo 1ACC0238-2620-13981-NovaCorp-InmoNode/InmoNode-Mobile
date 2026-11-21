@@ -188,6 +188,11 @@
         <item quantity="many">%d vouchers</item>
         <item quantity="other">%d vouchers</item>
     </plurals>
+    <plurals name="sync_result_identity_documents">
+        <item quantity="one">%d documento de identidad</item>
+        <item quantity="many">%d documentos de identidad</item>
+        <item quantity="other">%d documentos de identidad</item>
+    </plurals>
     <plurals name="sync_result_conflicts">
         <item quantity="one">%d separación tiene conflicto de disponibilidad: resuélvelo en la lista.</item>
         <item quantity="many">%d separaciones tienen conflicto de disponibilidad: resuélvelos en la lista.</item>
@@ -219,6 +224,7 @@
     <string name="wizard_prospect">Prospecto</string>
     <string name="wizard_voucher">Voucher</string>
     <string name="wizard_ocr">Datos OCR</string>
+    <string name="wizard_identity">Documento</string>
     <string name="wizard_contract">Contrato</string>
     <string name="status_verifying">En verificación</string>
     <string name="status_verified">Verificada</string>
@@ -239,7 +245,18 @@
     <string name="field_loading">Cargando…</string>
     <string name="voucher_flash">Cambiar flash</string>
     <string name="voucher_capture_hint">Encuadra el voucher completo dentro del marco</string>
-    <string name="voucher_step">Paso 2 de 4</string>
+    <string name="voucher_step">Paso 2 de 5</string>
+    <string name="identity_document_capture">Documento de identidad</string>
+    <string name="identity_document_hint">Encuadra el documento de identidad del comprador dentro del marco</string>
+    <string name="identity_document_permission">Permite el acceso a la cámara para capturar el documento de identidad del comprador.</string>
+    <string name="identity_document_step">Paso 4 de 5 (opcional)</string>
+    <string name="identity_document_later">Se enviará en la próxima sincronización.</string>
+    <string name="identity_document_skip">Omitir</string>
+    <string name="identity_document_pending">Documento de identidad pendiente</string>
+    <string name="identity_document_waiting">Documento de identidad por enviar</string>
+    <string name="identity_document_sent">Documento de identidad enviado</string>
+    <string name="identity_document_attach">Adjuntar documento de identidad</string>
+    <string name="identity_document_retake">Volver a capturar el documento de identidad</string>
     <string name="prospect_saved_help">Los datos están guardados en el dispositivo y se enviarán automáticamente cuando haya conexión.</string>
     <string name="portfolio_background">Continuar en segundo plano</string>
     <string name="simulation_minimum">Inicial mínima</string>
