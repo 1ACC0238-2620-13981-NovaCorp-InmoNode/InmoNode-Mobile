@@ -13,29 +13,32 @@ import java.math.BigDecimal
 
 class CancelReservationDraftUseCaseTest {
     private val contracts = ContractDocumentsFake()
+    private val documents = IdentityDocumentRepositoryFake()
 
     @Test
-    fun discardsTheVoucherAndTheContractAfterCancellingTheDraft() = runTest {
+    fun discardsTheVoucherTheIdentityDocumentAndTheContractAfterCancellingTheDraft() = runTest {
         val reservations = FakeReservations(Result.success(Unit))
         val vouchers = VoucherRepositoryFake()
 
-        val result = CancelReservationDraftUseCase(reservations, vouchers, contracts)("draft-1")
+        val result = CancelReservationDraftUseCase(reservations, vouchers, documents, contracts)("draft-1")
 
         assertTrue(result.isSuccess)
         assertEquals(listOf("draft-1"), reservations.cancelled)
         assertEquals(1, vouchers.discards)
+        assertEquals(1, documents.discards)
         assertEquals(listOf("draft-1"), contracts.deleted)
     }
 
     @Test
-    fun keepsTheVoucherAndTheContractWhenTheDraftCannotBeCancelled() = runTest {
+    fun keepsTheVoucherTheIdentityDocumentAndTheContractWhenTheDraftCannotBeCancelled() = runTest {
         val reservations = FakeReservations(Result.failure(IllegalStateException("Solo se puede cancelar un borrador local.")))
         val vouchers = VoucherRepositoryFake()
 
-        val result = CancelReservationDraftUseCase(reservations, vouchers, contracts)("synced-1")
+        val result = CancelReservationDraftUseCase(reservations, vouchers, documents, contracts)("synced-1")
 
         assertTrue(result.isFailure)
         assertEquals(0, vouchers.discards)
+        assertEquals(0, documents.discards)
         assertTrue(contracts.deleted.isEmpty())
     }
 
@@ -43,10 +46,11 @@ class CancelReservationDraftUseCaseTest {
     fun aFailedVoucherCleanupDoesNotUndoTheCancellation() = runTest {
         val vouchers = VoucherRepositoryFake(Result.failure(IllegalStateException("disk")))
 
-        val result = CancelReservationDraftUseCase(FakeReservations(Result.success(Unit)), vouchers, contracts)("draft-1")
+        val result = CancelReservationDraftUseCase(FakeReservations(Result.success(Unit)), vouchers, documents, contracts)("draft-1")
 
         assertTrue(result.isSuccess)
         assertEquals(1, vouchers.discards)
+        assertEquals("the photo is cleaned up even when the voucher cleanup fails", 1, documents.discards)
     }
 
     private class FakeReservations(private val cancelResult: Result<Unit>) : ReservationRepository {

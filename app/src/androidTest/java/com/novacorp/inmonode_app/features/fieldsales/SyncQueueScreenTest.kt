@@ -67,6 +67,12 @@ class SyncQueueScreenTest {
         override suspend fun review(voucherId: String, data: OcrData): Result<Voucher> = error("unused")
         override suspend fun getPaymentEvidences(reservationId: String): Result<PaymentEvidences> = error("unused")
     }
+    private val identityDocuments = object : IdentityDocumentRepository {
+        override fun observeDocuments() = flowOf(emptyList<IdentityDocument>())
+        override suspend fun capture(reservationId: String, imagePath: String): Result<IdentityDocument> = error("unused")
+        override suspend fun upload(documentId: String): Result<IdentityDocument> = error("unused")
+        override suspend fun discardCancelled() = Result.success(Unit)
+    }
     private val background = object : BackgroundSync {
         override fun schedule() = Unit
         override val state = MutableStateFlow<BackgroundSyncState>(BackgroundSyncState.Idle)
@@ -75,7 +81,7 @@ class SyncQueueScreenTest {
     private fun showQueue(serverSummary: SyncSummary, receipts: VoucherRepository) {
         val fields = object : FieldSyncRepository { override suspend fun synchronize() = Result.success(serverSummary) }
         val viewModel = SyncQueueViewModel(reservations, prospects, receipts, portfolio, ConnectivityMonitor(context),
-            SyncFieldRecordsUseCase(fields, reservations, receipts, auth), background, ResolveConflictUseCase(reservations), SavedStateHandle())
+            SyncFieldRecordsUseCase(fields, reservations, receipts, identityDocuments, auth), background, ResolveConflictUseCase(reservations), SavedStateHandle())
         compose.setContent { InmoNodeAppTheme { SyncQueueScreen(viewModel = viewModel, onConflict = {}, onDraft = {}) } }
         compose.waitUntil(10_000) {
             runCatching { compose.onNodeWithText("Sincronizar ahora").assertIsEnabled() }.isSuccess

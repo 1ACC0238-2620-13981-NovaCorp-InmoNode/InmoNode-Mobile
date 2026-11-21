@@ -14,15 +14,19 @@ import java.io.IOException
 import javax.inject.Inject
 
 class ImageCompressor @Inject constructor() {
-    /** Encode once and retain this exact file for idempotent upload retries. */
-    suspend fun compress(source: File, destination: File): File = withContext(Dispatchers.IO) {
+    /**
+     * Encode once and retain this exact file for idempotent upload retries.
+     *
+     * @param subject what the photo shows, as the error messages name it ("voucher", "documento de identidad")
+     */
+    suspend fun compress(source: File, destination: File, subject: String = "voucher"): File = withContext(Dispatchers.IO) {
         val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
         BitmapFactory.decodeFile(source.path, bounds)
-        require(bounds.outWidth > 0 && bounds.outHeight > 0) { "La imagen no es legible. Vuelve a capturar el voucher." }
+        require(bounds.outWidth > 0 && bounds.outHeight > 0) { "La imagen no es legible. Vuelve a capturar el $subject." }
         var sample = 1
         while (maxOf(bounds.outWidth, bounds.outHeight) / sample > 2048) sample *= 2
         val original = BitmapFactory.decodeFile(source.path, BitmapFactory.Options().apply { inSampleSize = sample })
-            ?: throw IOException("No se pudo abrir la imagen del voucher.")
+            ?: throw IOException("No se pudo abrir la imagen del $subject.")
         val orientation = ExifInterface(source.path).getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)
         val transform = Matrix().apply {
             when (orientation) {
@@ -47,8 +51,8 @@ class ImageCompressor @Inject constructor() {
                 if (temporary.length() in 1 until MAX_BYTES) break
                 quality -= 10
             } while (quality >= 40)
-            check(temporary.length() in 1 until MAX_BYTES) { "No se pudo comprimir el voucher por debajo de 2 MB. Vuelve a capturarlo." }
-            check(temporary.renameTo(destination)) { "No se pudo guardar el voucher comprimido." }
+            check(temporary.length() in 1 until MAX_BYTES) { "No se pudo comprimir el $subject por debajo de 2 MB. Vuelve a capturarlo." }
+            check(temporary.renameTo(destination)) { "No se pudo guardar el $subject comprimido." }
             destination
         } finally {
             temporary.delete()

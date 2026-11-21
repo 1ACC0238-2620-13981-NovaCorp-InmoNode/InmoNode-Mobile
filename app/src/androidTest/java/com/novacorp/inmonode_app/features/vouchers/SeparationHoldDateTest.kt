@@ -62,8 +62,14 @@ class SeparationHoldDateTest {
         override suspend fun processOcr(voucherId: String): Result<Voucher> = error("unused")
         override suspend fun review(voucherId: String, data: OcrData): Result<Voucher> = error("unused")
     }
+    private val identityDocuments = object : IdentityDocumentRepository {
+        override fun observeDocuments() = flowOf(emptyList<IdentityDocument>())
+        override suspend fun capture(reservationId: String, imagePath: String): Result<IdentityDocument> = error("unused")
+        override suspend fun upload(documentId: String): Result<IdentityDocument> = error("unused")
+        override suspend fun discardCancelled(): Result<Unit> = error("unused")
+    }
     private fun viewModel(saved: SavedStateHandle = SavedStateHandle()) =
-        SeparationsViewModel(reservations, prospects, portfolio, GetPaymentEvidencesUseCase(vouchers), saved)
+        SeparationsViewModel(reservations, prospects, portfolio, identityDocuments, GetPaymentEvidencesUseCase(vouchers), saved)
 
     @Test fun separationListLabelsTheHoldDate() {
         val viewModel = viewModel()
@@ -74,7 +80,7 @@ class SeparationHoldDateTest {
 
     @Test fun separationDetailLabelsTheHoldDateUnderTheCountdown() {
         val viewModel = viewModel(SavedStateHandle(mapOf("reservationId" to "r1")))
-        compose.setContent { InmoNodeAppTheme { SeparationDetailScreen(viewModel = viewModel, onBack = {}, onReplace = {}, onContract = {}) } }
+        compose.setContent { InmoNodeAppTheme { SeparationDetailScreen(viewModel = viewModel, onBack = {}, onReplace = {}, onContract = {}, onIdentityDocument = {}) } }
         compose.waitUntil(10_000) { compose.onAllNodesWithText("Lote bloqueado hasta", substring = true).fetchSemanticsNodes().isNotEmpty() }
         screenshot("separations-hold-detail")
     }

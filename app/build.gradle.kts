@@ -73,6 +73,8 @@ android {
     testOptions {
         unitTests.isReturnDefaultValues = true
     }
+    // The exported Room schemas let MigrationTestHelper rebuild every earlier version of the local database.
+    sourceSets.getByName("androidTest").assets.directories.add("$projectDir/schemas")
 }
 
 dependencies {
@@ -118,6 +120,7 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.room3.testing)
     // T62 spike: SQLCipher is only measured from androidTest; the app does not ship it.
     androidTestImplementation(libs.sqlcipher.android)
     debugImplementation(libs.androidx.compose.ui.test.manifest)

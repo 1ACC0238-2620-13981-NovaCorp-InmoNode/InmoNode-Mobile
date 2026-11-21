@@ -30,6 +30,8 @@ fun SeparationListScreen(modifier:Modifier=Modifier,viewModel:SeparationsViewMod
      Text(s.lot(row.lotId)?.code?:row.lotId.toString(),style=MaterialTheme.typography.headlineSmall)
      Text("${s.prospects.firstOrNull { it.id==row.prospectId }?.fullName.orEmpty()} · ${row.initialAmount}")
      StatusChip(s.summaries[row.id]?.status?:row.serverStatus?:row.status.name)
+     // Only the pending ones are flagged in the list; the detail shows every state.
+     s.identityDocumentState(row)?.takeIf { it==IdentityDocumentState.PENDING }?.let { IdentityDocumentLabel(it) }
      (s.summaries[row.id]?.waitingUntil?:row.blockedUntil)?.let { Text(stringResource(R.string.lot_held_until,displayTimestamp(it)),style=MaterialTheme.typography.bodySmall) }
     } } }
   }

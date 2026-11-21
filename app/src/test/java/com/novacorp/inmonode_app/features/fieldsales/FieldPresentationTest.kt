@@ -40,12 +40,15 @@ class FieldPresentationTest {
    val row=Reservation("draft",lotId,prospectId,initialAmount,"2026-10-01",ReservationStatus.DRAFT,terms=terms)
    state.value=listOf(row);return Result.success(row)
   }
-  override suspend fun confirmDraft(reservationId:String):Result<Reservation> = Result.failure(IllegalStateException("Voucher pendiente"))
+  /** Whether the voucher was reviewed, so the draft can be confirmed. */
+ var voucherReviewed=false
+ override suspend fun confirmDraft(reservationId:String):Result<Reservation> = if(!voucherReviewed) Result.failure(IllegalStateException("Voucher pendiente"))
+  else Result.success(state.value.first { it.id==reservationId }.copy(status=ReservationStatus.PENDING_SYNC).also { state.value=listOf(it) })
   override suspend fun cancelDraft(reservationId:String)=Result.success(Unit)
   override suspend fun reassign(reservationId:String,newLotId:Long):Result<Reservation> = Result.failure(IllegalStateException())
  }
  private fun wizard(p:PortfolioRepository,people:ProspectRepository,rows:ReservationRepository,saved:SavedStateHandle)=
-  ReservationWizardViewModel(p,people,rows,BeginReservationUseCase(rows),ReserveLotUseCase(rows),CancelReservationDraftUseCase(rows,VoucherRepositoryFake(),ContractDocumentsFake()),CompleteProspectUseCase(people),
+  ReservationWizardViewModel(p,people,rows,BeginReservationUseCase(rows),ReserveLotUseCase(rows),CancelReservationDraftUseCase(rows,VoucherRepositoryFake(),IdentityDocumentRepositoryFake(),ContractDocumentsFake()),CompleteProspectUseCase(people),
   PreviewContractUseCase(contracts),saved)
  @Test fun doubleTapCreatesOnlyOneDurableDraft()=runTest {
   Dispatchers.setMain(StandardTestDispatcher(testScheduler))
@@ -64,6 +67,15 @@ class FieldPresentationTest {
    assertEquals(ReservationStatus.DRAFT,vm.uiState.value.reservation?.status)
    assertFalse(vm.uiState.value.completed);assertEquals("Voucher pendiente",vm.uiState.value.errorMessage)
    assertEquals("draft",saved.get<String>("reservationId"));vm.viewModelScope.cancel()
+  } finally { Dispatchers.resetMain() }
+ }
+ @Test fun confirmedSeparationCompletesTheWizardAndWaitsToSync()=runTest {
+  Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+  try { val rows=ReservationsFake().apply { voucherReviewed=true };val vm=wizard(PortfolioFake(),PeopleFake(),rows,SavedStateHandle(mapOf("lotId" to 1L)))
+   runCurrent();vm.select(person.id);vm.amount("500");vm.begin();runCurrent();vm.confirm();runCurrent()
+   assertEquals(ReservationStatus.PENDING_SYNC,vm.uiState.value.reservation?.status)
+   assertTrue(vm.uiState.value.completed);assertNull(vm.uiState.value.errorMessage);assertFalse(vm.uiState.value.working)
+   vm.viewModelScope.cancel()
   } finally { Dispatchers.resetMain() }
  }
  @Test fun recreatedWizardRestoresSelectedProspectAndAmount()=runTest {

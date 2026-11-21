@@ -27,6 +27,8 @@ data class Reservation(
 }
 
 /** What one sync sent. Records that an earlier sync, such as the background one, already sent are not counted again. */
-data class SyncSummary(val prospectsSynced: Int, val reservationsSynced: Int, val conflicts: Int, val vouchersUploaded: Int = 0) {
-    val sentNothing: Boolean get() = prospectsSynced == 0 && reservationsSynced == 0 && conflicts == 0 && vouchersUploaded == 0
+data class SyncSummary(val prospectsSynced: Int, val reservationsSynced: Int, val conflicts: Int, val vouchersUploaded: Int = 0,
+    val identityDocumentsUploaded: Int = 0) {
+    val sentNothing: Boolean get() = prospectsSynced == 0 && reservationsSynced == 0 && conflicts == 0 && vouchersUploaded == 0 &&
+        identityDocumentsUploaded == 0
 }
