@@ -33,6 +33,9 @@ fun PortfolioDownloadScreen(modifier: Modifier = Modifier, viewModel: PortfolioD
         HorizontalDivider()
         if (state.completed) Text(stringResource(R.string.portfolio_ready))
         if (!state.loading && !state.completed) PrimaryButton(stringResource(R.string.field_retry), onClick = viewModel::retry)
-        PrimaryButton(stringResource(if(state.loading)R.string.portfolio_background else R.string.field_continue), state.portfolio.downloadedAt != null, onContinue)
+        // Leaving before the download completes is the alternative action (M04, M05).
+        val continueLabel = stringResource(if(state.loading)R.string.portfolio_background else R.string.field_continue)
+        if (state.completed) PrimaryButton(continueLabel, state.portfolio.downloadedAt != null, onContinue)
+        else SecondaryButton(continueLabel, state.portfolio.downloadedAt != null, onContinue)
     }
 }

@@ -46,7 +46,7 @@ fun SeparationDetailScreen(modifier:Modifier=Modifier,viewModel:SeparationsViewM
     if(state==IdentityDocumentState.PENDING) PrimaryButton(stringResource(R.string.identity_document_attach)) { onIdentityDocument(row.id) }
     else if(document?.replaceable==true) TextButton(onClick={onIdentityDocument(row.id)}) { Text(stringResource(R.string.identity_document_retake)) }
    }
-   OutlinedButton(onClick={onContract(row.id)},modifier=Modifier.fillMaxWidth()) { Text(stringResource(R.string.reservation_contract)) }
+   SecondaryButton(stringResource(R.string.reservation_contract)) { onContract(row.id) }
    if(s.loading)LinearProgressIndicator(modifier=Modifier.fillMaxWidth())
    FieldError(s.errorMessage)
    if(s.errorMessage!=null)PrimaryButton(stringResource(R.string.field_retry),onClick=viewModel::retry)

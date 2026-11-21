@@ -20,7 +20,7 @@ fun LotDetailSheet(lot: Lot, onDismiss: () -> Unit, onSimulate: () -> Unit, onRe
             lot.dimensions.front?.let { FieldValue(stringResource(R.string.lot_front), "$it m") }
             lot.dimensions.depth?.let { FieldValue(stringResource(R.string.lot_depth), "$it m") }
             FieldValue(stringResource(R.string.lot_price), "${lot.currency} ${lot.price}")
-            OutlinedButton(onClick=onSimulate,modifier=Modifier.fillMaxWidth()) { Text(stringResource(R.string.lot_simulate)) }
+            SecondaryButton(stringResource(R.string.lot_simulate),onClick=onSimulate)
             PrimaryButton(stringResource(R.string.lot_reserve),lot.isAvailable(),onReserve)
         }
     }
