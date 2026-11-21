@@ -70,6 +70,16 @@ fun <T> FieldDropdown(label: String, value: String, options: List<T>, optionLabe
         }
     }
 }
+/** Segmented button (style guide, M12, M29): switches between sibling lists and shows which one is open. */
+@Composable
+fun SegmentedTabs(labels: List<String>, selected: Int, onSelect: (Int) -> Unit) {
+    SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
+        labels.forEachIndexed { index, label ->
+            SegmentedButton(selected = index == selected, onClick = { if (index != selected) onSelect(index) },
+                shape = SegmentedButtonDefaults.itemShape(index = index, count = labels.size), label = { Text(label) })
+        }
+    }
+}
 @Composable
 fun FieldValue(label: String, value: String) {
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {

@@ -14,10 +14,9 @@ import com.novacorp.inmonode_app.core.designsystem.components.*
 @Composable
 fun SeparationListScreen(modifier:Modifier=Modifier,viewModel:SeparationsViewModel=hiltViewModel(),onProspects:()->Unit,onDetail:(String)->Unit) {
  val s by viewModel.uiState.collectAsStateWithLifecycle()
- Column(modifier.fillMaxSize().padding(16.dp),verticalArrangement=Arrangement.spacedBy(16.dp)) {
+ Column(modifier.fillMaxSize().padding(16.dp),verticalArrangement=Arrangement.spacedBy(8.dp)) {
   Text(stringResource(R.string.prospects_title),style=MaterialTheme.typography.headlineMedium)
-  Row { TextButton(onClick=onProspects) { Text(stringResource(R.string.nav_prospects)) }
-   TextButton(onClick={}) { Text(stringResource(R.string.separations_title)) } }
+  SegmentedTabs(listOf(stringResource(R.string.nav_prospects),stringResource(R.string.separations_title)),1) { onProspects() }
   Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween) {
    TextButton(onClick=viewModel::refreshList,enabled=!s.loading) { Text(stringResource(R.string.field_refresh)) }
    if(s.loading)CircularProgressIndicator(modifier=Modifier.size(24.dp))
